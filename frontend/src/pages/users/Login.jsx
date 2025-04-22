@@ -29,49 +29,52 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
+  
     try {
       const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email: email.trim(), // Trim whitespace
+          password 
+        }),
       });
-
+  
       const data = await response.json();
-
-      if (response.ok && data.token) {
-        localStorage.setItem("token", data.token);
-        
-        const userData = {
-          id: data.user._id,
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role,
-        };
-        localStorage.setItem("user", JSON.stringify(userData));
-        login(userData);
-
-        // Redirect based on role with animation
-        setTimeout(() => {
-          if (data.user.role === "volunteer") {
-            navigate("/volunteerdashboard");
-          } else if (data.user.role === "ngo") {
-            navigate("/ngo/ngodashboard");
-          } else if (data.user.role === "Admin") {
-            navigate("/admindashboard");
-          }
-        }, 500);
-      } else {
-        setError(data.message || "Login failed. Please check your credentials.");
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
+  
+      // Store token and user data
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      login(data.user); // Update auth context
+  
+      // Redirect based on role
+      setTimeout(() => {
+        switch(data.user.role.toLowerCase()) {
+          case "volunteer":
+            navigate("/volunteerdashboard");
+            break;
+          case "ngo":
+            navigate("/ngo/ngodashboard");
+            break;
+          case "admin":
+            navigate("/admindashboard");
+            break;
+          default:
+            navigate("/");
+        }
+      }, 500);
+  
     } catch (error) {
       console.error("Login error:", error);
-      setError("An error occurred during login. Please try again.");
+      setError(error.message || "An error occurred during login");
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <motion.div
       className="relative flex justify-center items-center min-h-screen overflow-hidden"

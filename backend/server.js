@@ -24,10 +24,8 @@ const uprofileRoutes = require("./routes/uprofileRoutes");
 
 // Middleware configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  origin: true, // reflect the request origin
+  credentials: true
 }));
 app.options("*", cors());
 app.use(helmet({
@@ -54,7 +52,7 @@ app.use(rateLimit({
 // Body Parsers
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
+app.use(express.static(path.join(__dirname, 'build')));
 // Static File Serving
 app.use(
   "/uploads",

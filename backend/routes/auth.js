@@ -39,66 +39,59 @@ const sendPasswordChangedEmail = async (email) => {
 };
 
 module.exports = { sendPasswordChangedEmail };
-
-
-
-
 const router = express.Router();
 router.post("/register/volunteer", async (req, res) => {
   const { name, email, password } = req.body;
 
+  // Basic validation
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   try {
-    // Check if email already exists in NGO or Volunteer collections
+    // Check for existing user
     const existingNGO = await NGO.findOne({ email });
     const existingVolunteer = await Volunteer.findOne({ email });
-    console.log("User found:", existingVolunteer);
-  
+    
     if (existingNGO || existingVolunteer) {
       return res.status(400).json({ message: "Email already registered" });
     }
-  
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-  
-    // Generate email verification token (valid for 1 hour)
+
+    // Generate token
     const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
-  
-    // Create a new Volunteer (not verified yet)
+
+    // Create and save volunteer
     const newVolunteer = new Volunteer({
       name,
       email,
       password: hashedPassword,
       role: "volunteer",
-      verified: false, // Ensure email verification before login
-      verificationToken: token, // Store the token for later verification
+      verified: false,
+      verificationToken: token,
     });
-  
+
     await newVolunteer.save();
-  
-    // Email verification link
-// In your email sending function (backend)
-const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(user.email)}`;
 
-
-    // Send verification email
-    await transporter.sendMail({
-      from: "your-email@gmail.com",
+    // Send verification email (non-blocking)
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+    
+    transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to: email,
-      subject: "Verify Your Email - Volunteer Registration",
-      html: `
-        <p>Hello <strong>${name}</strong>,</p>
-        <p>Thank you for registering as a volunteer!</p>
-        <p>Please click the link below to verify your email:</p>
-        <p><a href="${verificationLink}">Verify Email</a></p>
-        <p>This link expires in 1 hour.</p>
-        <p>If you didn't register, ignore this email.</p>
-      `,
-    });
-  
-    res.status(201).json({ message: "Volunteer registered! Check your email to verify your account." });
+      subject: "Verify Your Email",
+      html: `<p>Click <a href="${verificationLink}">here</a> to verify.</p>`,
+    }).catch(err => console.error("Email error:", err));
+
+    res.status(201).json({ message: "Registration successful! Check your email." });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    console.error("Registration error:", error);
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message // Include for debugging (remove in production)
+    });
   }
 });
 

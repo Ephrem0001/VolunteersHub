@@ -27,25 +27,30 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Attempting login with:", { 
-      email: email.trim(), 
-      password // Don't log actual passwords in production
-    });
+    console.log("Attempting login with:", { email, password });
+    
     setIsLoading(true);
     setError("");
+  
     try {
-      
-const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    email: email.trim(), // Trim whitespace
-    password: password
-  }),
-});
+      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password
+        }),
+      });
+  
+      // Handle non-JSON responses
+      if (response.status === 404) {
+        throw new Error("Login endpoint not found (404)");
+      }
   
       const data = await response.json();
-  
+      
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
       }
@@ -74,7 +79,15 @@ const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/l
   
     } catch (error) {
       console.error("Login error:", error);
-      setError(error.message || "An error occurred during login");
+      
+      // Specific error messages
+      if (error.message.includes("Failed to fetch")) {
+        setError("Network error. Please check your connection.");
+      } else if (error.message.includes("404")) {
+        setError("Login service unavailable. Please try again later.");
+      } else {
+        setError(error.message || "Login failed. Please check your credentials.");
+      }
     } finally {
       setIsLoading(false);
     }

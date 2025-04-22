@@ -323,36 +323,78 @@ router.put("/profile/update", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const cleanEmail = email.trim().toLowerCase();
 
-  console.log("Login attempt for:", cleanEmail); // Debug
+  console.log("Login attempt for:", cleanEmail);
   
   try {
+    // 1. Find user in all collections
     const user = await Volunteer.findOne({ email: cleanEmail }) || 
                 await NGO.findOne({ email: cleanEmail }) || 
                 await Admin.findOne({ email: cleanEmail });
 
     if (!user) {
-      console.log("USER NOT FOUND"); // Debug
-      return res.status(401).json({ message: "Invalid credentials" });
+      console.log("User not found");
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      });
     }
 
-    console.log("Found user:", user.email); // Debug
+    // 2. Check password
     const isMatch = await bcrypt.compare(password, user.password);
-    
     if (!isMatch) {
-      console.log("PASSWORD MISMATCH"); // Debug
-      return res.status(401).json({ message: "Invalid credentials" });
+      console.log("Password mismatch");
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      });
     }
 
-    // Rest of your login logic...
-    
+    // 3. Check if email is verified (if your system requires it)
+    if (user.verified !== true) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email first"
+      });
+    }
+
+    // 4. Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role || 'volunteer' // Default role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    // 5. Return user data (without sensitive info)
+    const userData = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      verified: user.verified
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: userData
+    });
+
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ 
+      success: false,
+      message: "Server error during login",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
   router.get('/verify-email', async (req, res) => {

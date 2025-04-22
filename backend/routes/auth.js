@@ -307,56 +307,39 @@ router.put("/profile/update", verifyToken, async (req, res) => {
   }
 });
 
-// In your auth routes (backend)
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  
+  // Trim and lowercase email for consistency
+  const cleanEmail = email.trim().toLowerCase();
 
-  // 1. Find user in any collection (case-insensitive)
-  const user = await Volunteer.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
-              await NGO.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
-              await Admin.findOne({ email: new RegExp(`^${email}$`, 'i') });
+  try {
+    // Search all collections case-insensitively
+    const user = await Volunteer.findOne({ email: cleanEmail }) || 
+                await NGO.findOne({ email: cleanEmail }) || 
+                await Admin.findOne({ email: cleanEmail });
 
-  if (!user) {
-    return res.status(401).json({ 
-      success: false,
-      message: "Invalid email or password" // Generic for security
-    });
-  }
-
-  // 2. Verify password
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(401).json({ 
-      success: false,
-      message: "Invalid email or password"
-    });
-  }
-
-  // 3. Check if email is verified
-  if (user.verified !== true) {
-    return res.status(403).json({
-      success: false,
-      message: "Please verify your email first"
-    });
-  }
-
-  // Generate token and respond
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "30d" }
-  );
-
-  res.status(200).json({
-    success: true,
-    token,
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role
+    if (!user) {
+      console.log("Login failed: No user found for", cleanEmail);
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-  });
+
+    // Debug password comparison
+    console.log("Comparing passwords for user:", user.email);
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!isMatch) {
+      console.log("Password mismatch for user:", user.email);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Rest of your successful login logic
+    // ...
+    
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
   router.get('/verify-email', async (req, res) => {
     try {

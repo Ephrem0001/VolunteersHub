@@ -27,10 +27,12 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login attempt with:", { email, password }); // Debug before sending
+    console.log("Attempting login with:", { 
+      email: email.trim(), 
+      password // Don't log actual passwords in production
+    });
     setIsLoading(true);
     setError("");
-  
     try {
       
 const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {

@@ -57,7 +57,7 @@ const VolunteerDashboard = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/auth/profile", {
+        const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -94,7 +94,7 @@ const VolunteerDashboard = () => {
     const fetchApprovedEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/events/approved");
+        const response = await fetch("https://eventmannagemnt-11.onrender.com/api/events/approved");
         const data = await response.json();
         
         const categorizedEvents = data.map(event => ({

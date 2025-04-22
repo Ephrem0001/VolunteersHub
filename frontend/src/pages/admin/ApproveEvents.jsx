@@ -13,7 +13,7 @@ const ApproveEvents = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:5000/api/events/pending", {
+      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/events/pending", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
@@ -30,7 +30,7 @@ const ApproveEvents = () => {
   };
   const updateEventStatus = async (id, status) => {
     try {
-      const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
+      const endpoint = `https://eventmannagemnt-11.onrender.com/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: {

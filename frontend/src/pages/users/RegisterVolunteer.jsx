@@ -34,7 +34,7 @@ const RegisterVolunteer = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register/volunteer", {
+      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/register/volunteer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

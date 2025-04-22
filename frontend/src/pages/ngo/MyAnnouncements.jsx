@@ -9,7 +9,7 @@ const MyAnnouncements = () => {
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/announcements");
+        const response = await fetch("https://eventmannagemnt-11.onrender.com/api/announcements");
         if (!response.ok) {
           throw new Error("Failed to fetch announcements");
         }
@@ -33,7 +33,7 @@ const MyAnnouncements = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/announcements", {
+      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/announcements", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,7 +58,7 @@ const MyAnnouncements = () => {
   // Handle deleting an announcement
   const handleDeleteAnnouncement = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/announcements/${id}`, {
+      const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/announcements/${id}`, {
         method: "DELETE",
       });
 

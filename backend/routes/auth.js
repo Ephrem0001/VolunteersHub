@@ -309,32 +309,29 @@ router.put("/profile/update", verifyToken, async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  
-  // Trim and lowercase email for consistency
   const cleanEmail = email.trim().toLowerCase();
 
+  console.log("Login attempt for:", cleanEmail); // Debug
+  
   try {
-    // Search all collections case-insensitively
     const user = await Volunteer.findOne({ email: cleanEmail }) || 
                 await NGO.findOne({ email: cleanEmail }) || 
                 await Admin.findOne({ email: cleanEmail });
 
     if (!user) {
-      console.log("Login failed: No user found for", cleanEmail);
+      console.log("USER NOT FOUND"); // Debug
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Debug password comparison
-    console.log("Comparing passwords for user:", user.email);
+    console.log("Found user:", user.email); // Debug
     const isMatch = await bcrypt.compare(password, user.password);
     
     if (!isMatch) {
-      console.log("Password mismatch for user:", user.email);
+      console.log("PASSWORD MISMATCH"); // Debug
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Rest of your successful login logic
-    // ...
+    // Rest of your login logic...
     
   } catch (error) {
     console.error("Login error:", error);

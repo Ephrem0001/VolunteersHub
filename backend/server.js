@@ -24,8 +24,7 @@ const uprofileRoutes = require("./routes/uprofileRoutes");
 
 // Middleware configuration
 app.use(cors({
-  origin: true, // reflect the request origin
-  credentials: true
+  origin: 'https://eventmannagemnt-1.onrender.com'
 }));
 app.options("*", cors());
 app.use(helmet({

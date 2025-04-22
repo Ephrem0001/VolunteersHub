@@ -34,38 +34,50 @@ const RegisterNGO = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!agreeToTerms) {
-      alert("Please agree to the Terms and Conditions.");
+      setRegistrationMessage("Please agree to the Terms and Conditions.");
       return;
     }
-
+  
     setIsSubmitting(true);
+    setRegistrationMessage("");
+  
     try {
+      console.log("Submitting form data:", formData);
+      
       const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/register/ngo", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsEmailSent(true);
-        setRegistrationMessage("Please check your email to verify your account.");
-      } else {
-        alert(data.message || "Registration failed.");
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
       }
+  
+      const data = await response.json();
+      setIsEmailSent(true);
+      setRegistrationMessage(data.message || "Registration successful! Please check your email.");
+  
     } catch (error) {
-      console.error("Registration failed:", error);
-      alert("An error occurred while registering.");
+      console.error("Registration error:", error);
+      
+      // Handle specific error cases
+      if (error.message.includes("Failed to fetch")) {
+        setRegistrationMessage("Network error. Please check your connection and try again.");
+      } else {
+        setRegistrationMessage(error.message || "An unexpected error occurred during registration.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <motion.div
       className="flex justify-center items-center min-h-screen bg-gray-900 relative overflow-hidden"

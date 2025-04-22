@@ -152,15 +152,29 @@ router.get("/profile", verifyToken, async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-  
 router.post("/register/ngo", async (req, res) => {
   const { name, email, password, organization } = req.body;
 
   try {
+    console.log("Incoming registration request for:", email);
+
+    // Validate input
+    if (!name || !email || !password || !organization) {
+      console.log("Missing required fields");
+      return res.status(400).json({ 
+        success: false,
+        message: "All fields are required" 
+      });
+    }
+
     // Check for existing user
     const existingUser = await NGO.findOne({ email }) || await Volunteer.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+      console.log("Email already exists:", email);
+      return res.status(400).json({ 
+        success: false,
+        message: "Email already registered" 
+      });
     }
 
     // Hash password and create token
@@ -179,6 +193,7 @@ router.post("/register/ngo", async (req, res) => {
     });
 
     await newNGO.save();
+    console.log("NGO created successfully:", email);
 
     // Create verification link
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
@@ -201,11 +216,13 @@ router.post("/register/ngo", async (req, res) => {
       message: "Registration successful! Please check your email.",
       email
     });
+
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ 
       success: false,
-      message: "Server error during registration" 
+      message: "Server error during registration",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

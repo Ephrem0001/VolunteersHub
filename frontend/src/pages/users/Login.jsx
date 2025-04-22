@@ -27,18 +27,20 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log("Login attempt with:", { email, password }); // Debug before sending
     setIsLoading(true);
     setError("");
   
     try {
-      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: email.trim(), // Trim whitespace
-          password 
-        }),
-      });
+      
+const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    email: email.trim(), // Trim whitespace
+    password: password
+  }),
+});
   
       const data = await response.json();
   

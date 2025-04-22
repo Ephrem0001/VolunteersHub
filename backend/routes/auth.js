@@ -307,76 +307,56 @@ router.put("/profile/update", verifyToken, async (req, res) => {
   }
 });
 
+// In your auth routes (backend)
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Email and password are required"
-      });
-    }
+  // 1. Find user in any collection (case-insensitive)
+  const user = await Volunteer.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
+              await NGO.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
+              await Admin.findOne({ email: new RegExp(`^${email}$`, 'i') });
 
-    // Case-insensitive email search
-    const user = await Volunteer.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
-                await NGO.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
-                await Admin.findOne({ email: new RegExp(`^${email}$`, 'i') });
+  if (!user) {
+    return res.status(401).json({ 
+      success: false,
+      message: "Invalid email or password" // Generic for security
+    });
+  }
 
-    if (!user) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
+  // 2. Verify password
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ 
+      success: false,
+      message: "Invalid email or password"
+    });
+  }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
+  // 3. Check if email is verified
+  if (user.verified !== true) {
+    return res.status(403).json({
+      success: false,
+      message: "Please verify your email first"
+    });
+  }
 
-    // Create token payload
-    const tokenPayload = {
-      id: user._id,
-      email: user.email,
-      role: user.role || 'volunteer' // Default role if not specified
-    };
+  // Generate token and respond
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "30d" }
+  );
 
-    // Generate token
-    const token = jwt.sign(
-      tokenPayload,
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    // Return user data without sensitive information
-    const userResponse = {
+  res.status(200).json({
+    success: true,
+    token,
+    user: {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role,
-      verified: user.verified
-    };
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: userResponse
-    });
-
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ 
-      success: false,
-      message: "Internal server error"
-    });
-  }
+      role: user.role
+    }
+  });
 });
   router.get('/verify-email', async (req, res) => {
     try {

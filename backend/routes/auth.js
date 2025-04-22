@@ -309,99 +309,75 @@ router.put("/profile/update", verifyToken, async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-      const { email, password } = req.body;
+    const { email, password } = req.body;
 
-      // Validate input
-      if (!email || !password) {
-          return res.status(400).json({ 
-              success: false,
-              message: "Email and password are required",
-              code: "MISSING_CREDENTIALS"
-          });
-      }
-
-      // Check user in all collections (Volunteer -> NGO -> Admin)
-      let user = await Volunteer.findOne({ email }) || 
-                await NGO.findOne({ email }) || 
-                await Admin.findOne({ email });
-
-      // If no user found
-      if (!user) {
-          return res.status(401).json({ 
-              success: false,
-              message: "Invalid credentials", // Generic message for security
-              code: "INVALID_CREDENTIALS"
-          });
-      }
-
-      // Check if email is verified
-      if (!user.verified) {
-          return res.status(403).json({
-              success: false,
-              message: "Please verify your email address first",
-              code: "EMAIL_NOT_VERIFIED",
-              resendVerification: true // Frontend can use this to show resend option
-          });
-      }
-
-      // Check password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-          return res.status(401).json({ 
-              success: false,
-              message: "Invalid credentials",
-              code: "INVALID_CREDENTIALS"
-          });
-      }
-
-      // Check if user is blocked
-      if (user.status === "blocked") {
-          return res.status(403).json({ 
-              success: false,
-              message: "Your account has been blocked",
-              code: "ACCOUNT_BLOCKED"
-          });
-      }
-
-      // Determine role (use existing role field or fallback)
-      const role = user.role || 
-                 (user instanceof Volunteer ? "volunteer" : 
-                 (user instanceof NGO ? "ngo" : "admin"));
-
-      // Generate JWT token
-      const token = jwt.sign(
-        { id: user.id, role: user.role },
-        secretKey,
-        { expiresIn: '30d' }
-      
-      );
-
-      // Return successful response
-      res.status(200).json({
-          success: true,
-          message: "Login successful",
-          token,
-          role,
-          user: {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              role: role,
-              verified: true // Since we checked verification already
-          }
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Email and password are required"
       });
+    }
+
+    // Case-insensitive email search
+    const user = await Volunteer.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
+                await NGO.findOne({ email: new RegExp(`^${email}$`, 'i') }) || 
+                await Admin.findOne({ email: new RegExp(`^${email}$`, 'i') });
+
+    if (!user) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+
+    // Create token payload
+    const tokenPayload = {
+      id: user._id,
+      email: user.email,
+      role: user.role || 'volunteer' // Default role if not specified
+    };
+
+    // Generate token
+    const token = jwt.sign(
+      tokenPayload,
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    // Return user data without sensitive information
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      verified: user.verified
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: userResponse
+    });
 
   } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ 
-          success: false,
-          message: "Internal server error during login",
-          code: "SERVER_ERROR",
-          error: process.env.NODE_ENV === "development" ? error.message : undefined
-      });
+    console.error("Login error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Internal server error"
+    });
   }
 });
-
   router.get('/verify-email', async (req, res) => {
     try {
         const { token, email } = req.query;

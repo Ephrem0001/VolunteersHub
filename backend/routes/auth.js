@@ -398,79 +398,32 @@ router.post("/login", async (req, res) => {
   }
 });
 router.get('/verify-email', async (req, res) => {
-    try {
-        const { token, email } = req.query;
-        
-        // Validate required parameters
-        if (!token || !email) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Verification token and email are required',
-                code: 'MISSING_PARAMS'
-            });
-        }
+  const { token, email } = req.query;
 
-        const decodedEmail = decodeURIComponent(email);
-        
-        // Find user in either collection
-        const user = await NGO.findOne({ 
-            email: decodedEmail,
-            verificationToken: token,
-         // Check if token is still valid
-        }) || await Volunteer.findOne({
-            email: decodedEmail,
-            verificationToken: token,
-           
-        });
-        
+  try {
+      if (!token || !email) {
+          return res.status(400).json({ message: 'Token and email are required.' });
+      }
 
-        if (!user) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Invalid, expired, or already used verification link',
-                code: 'INVALID_TOKEN'
-            });
-        }
+      const decodedEmail = decodeURIComponent(email);
+      const user = await Volunteer.findOne({ email: decodedEmail, verificationToken: token }) ||
+                   await NGO.findOne({ email: decodedEmail, verificationToken: token });
 
-        // Update user verification status
-        user.verified = true;
-        user.verificationToken = undefined;
-        user.verificationExpires = undefined; // No need to keep after verification
-        await user.save();
+      if (!user) {
+          return res.status(400).json({ message: 'Invalid or expired token.' });
+      }
 
-        // Generate JWT token
-        const authToken = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+      user.verified = true;
+      user.verificationToken = undefined;
+      await user.save();
 
-        // Successful verification response
-        return res.status(200).json({ 
-            success: true,
-            message: 'Email verification successful! Your account is now active.',
-            data: {
-                token: authToken,
-                user: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                    verified: true
-                }
-            }
-        });
-
-    } catch (error) {
-        console.error('Email verification error:', error);
-        return res.status(500).json({ 
-            success: false,
-            message: 'An error occurred during email verification',
-            code: 'SERVER_ERROR',
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
+  } catch (error) {
+      console.error('Email verification error:', error);
+      res.status(500).json({ message: 'Server error during verification.' });
+  }
 });
+
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/"); // Images will be stored in an 'uploads' folder

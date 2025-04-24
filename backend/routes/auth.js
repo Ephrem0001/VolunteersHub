@@ -76,7 +76,7 @@ router.post("/register/volunteer", async (req, res) => {
     await newVolunteer.save();
 
     // Send verification email (non-blocking)
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `https://eventmannagemnt-1.onrender.com/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
     
     transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -397,7 +397,7 @@ router.post("/login", async (req, res) => {
     });
   }
 });
-  router.get('/verify-email', async (req, res) => {
+router.get('/verify-email', async (req, res) => {
     try {
         const { token, email } = req.query;
         

@@ -702,5 +702,41 @@ router.delete("/delete/:eventId", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+router.put('/events/:id', verifyToken, async (req, res) => {
+  const { name, description, date, location, image, status } = req.body;
+  console.log(req.body)
+
+  try {
+    // Find the event by ID
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Check if the user is the creator of the event
+    if (event.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized to edit this event' });
+    }
+
+    // Update fields
+    event.name = name || event.name;
+    event.description = description || event.description;
+    event.date = date || event.date;
+    event.location = location || event.location;
+    event.image = image || event.image; // Optional field
+    event.status = status || event.status; // Optional field
+
+    // Save the updated event
+    await event.save();
+
+    res.status(200).json({ message: 'Event updated successfully', event });
+  } catch (error) {
+    console.error('Error updating event:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 
 module.exports = router;

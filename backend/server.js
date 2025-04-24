@@ -21,6 +21,7 @@ const adminRoute = require("./routes/adminRoutes");
 const ngoRoutes = require("./routes/ngoRoutes");
 const userRoutes = require("./routes/usersRoute");
 const uprofileRoutes = require("./routes/uprofileRoutes");
+const edit = require("./routes/edit")
 
 // Middleware configuration
 // Replace your current CORS configuration with this:
@@ -93,7 +94,7 @@ app.use("/api/admin", adminRoute);
 app.use("/api/ngo", ngoRoutes);
 app.use("/api", userRoutes);
 app.use("/api/volunteer", uprofileRoutes);
-
+app.use("/api/edit",edit)
 // Health endpoints
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });

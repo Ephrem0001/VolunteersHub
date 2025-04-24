@@ -114,8 +114,9 @@ const ManageEvents = () => {
     }, [events, searchTerm, statusFilter, sortBy]);
 
     const handleEdit = (eventId) => {
-      navigate(`/edit-event/${eventId}`);
+      navigate(`/ngo/edit-event/${eventId}`);
     };
+     
 
     const handleDelete = async (eventId) => {
       if (!window.confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
@@ -440,7 +441,7 @@ const ManageEvents = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
-                  navigate("/create-event");
+                  navigate("ngo/create-event");
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-teal-500 to-green-600 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center mx-auto"
               >
@@ -516,18 +517,19 @@ const ManageEvents = () => {
 
                       {/* Action Buttons */}
                       <div className="px-5 pb-5 flex justify-between">
-                        <button
-                          onClick={() => handleEdit(event._id)}
-                          disabled={event.status === "approved"}
-                          className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
-                            event.status === "approved"
-                              ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                              : "bg-blue-600/30 hover:bg-blue-600/40 text-blue-400"
-                          }`}
-                          data-tooltip-id={`edit-tooltip-${event._id}`}
-                        >
-                          <FaEdit className="mr-2" /> Edit
-                        </button>
+                      <button
+  onClick={() => handleEdit(event._id)}
+  disabled={event.status === "approved"}
+  className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+    event.status === "approved"
+      ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+      : "bg-blue-600/30 hover:bg-blue-600/40 text-blue-400"
+  }`}
+  data-tooltip-id={`edit-tooltip-${event._id}`}
+>
+  <FaEdit className="mr-2" /> Edit
+</button>
+
                         <Tooltip id={`edit-tooltip-${event._id}`}>
                           {event.status === "approved" 
                             ? "Approved events cannot be edited" 

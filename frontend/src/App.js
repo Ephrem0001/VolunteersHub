@@ -34,6 +34,7 @@ import Terms from "./pages/users/Terms.jsx";
 import SuccessStories from "./pages/SuccessStories.jsx";
 import ForgotPassword from "./pages/users/ForgotPassword.jsx";
 import ResetPassword from "./pages/users/ResetPassword.jsx";
+import EditEvent from "./pages/ngo/EditEvent.jsx";
 // import ManageEvents from "./pages/ngo/ManageEvents.jsx";
 const App = () => {
   return (
@@ -98,6 +99,7 @@ const App = () => {
         <Route path="/ngo/ngodashboard" element={ <NgoDashboard />} /> 
         <Route path="/analytics/dashboard" element={ <Dashboard />} /> 
         <Route path="/ngo/manage-events" element={ <ManageEvents  />} /> 
+        <Route path="/ngo/edit-event/:id" element={<EditEvent />} />
         <Route path="/ngo/create-event" element={<CreateEvent />}/>
         <Route path="/ngo/blocked-ngo" element={<NgoBlocked />}/>
         <Route path="/ngo/termsandcondition" element={<TermsAndConditions/>}/>

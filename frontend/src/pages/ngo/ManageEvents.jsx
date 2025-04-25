@@ -441,7 +441,7 @@ const ManageEvents = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
-                  navigate("ngo/create-event");
+                  navigate("/ngo/create-event");
                 }}
                 className="px-6 py-3 bg-gradient-to-r from-teal-500 to-green-600 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center mx-auto"
               >

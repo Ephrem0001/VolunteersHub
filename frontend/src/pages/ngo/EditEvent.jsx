@@ -22,7 +22,7 @@ const EditEvent = () => {
 
   const fetchEvent = async () => {
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/edit/${id}`, {
+    const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/edit/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -60,7 +60,7 @@ const EditEvent = () => {
     setIsSubmitting(true); // Start submitting
 
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/edit/${id}`, {
+    const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/edit/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,

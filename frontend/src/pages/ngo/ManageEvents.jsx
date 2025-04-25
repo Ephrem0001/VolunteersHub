@@ -39,7 +39,7 @@ const ManageEvents = () => {
             return;
           }
   
-          const response = await fetch("https://eventmannagemnt-11.onrender.com/api/events/my-events", {
+          const response = await fetch("http://localhost:5000/api/events/my-events", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -133,7 +133,7 @@ const ManageEvents = () => {
           throw new Error("Authentication token missing. Please login again.");
         }
     
-        const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/events/${eventId}`, {
+        const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
           method: "DELETE",
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -467,7 +467,7 @@ const ManageEvents = () => {
                       {/* Event Image */}
                       <div className="relative h-48 overflow-hidden group">
                         <motion.img
-                          src={event.image?.startsWith('http') ? event.image : `https://eventmannagemnt-11.onrender.com${event.image}`}
+                          src={event.image?.startsWith('http') ? event.image : `http://localhost:5000${event.image}`}
                           alt={event.name}
                           className="w-full h-full object-cover"
                           initial={{ scale: 1 }}

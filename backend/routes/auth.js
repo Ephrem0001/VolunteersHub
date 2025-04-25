@@ -52,7 +52,7 @@ router.post("/register/volunteer", async (req, res) => {
     // Check for existing user
     const existingNGO = await NGO.findOne({ email });
     const existingVolunteer = await Volunteer.findOne({ email });
-    
+
     if (existingNGO || existingVolunteer) {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -70,19 +70,19 @@ router.post("/register/volunteer", async (req, res) => {
       password: hashedPassword,
       role: "volunteer",
       verified: false,
-      verificationToken: token,
+      verificationToken: token, // Store token in the database if needed
     });
 
     await newVolunteer.save();
 
     // Send verification email (non-blocking)
-    const verificationLink = `https://eventmannagemnt-1.onrender.com/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
-    
+    const verificationLink = `http://localhost:3000/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+
     transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Verify Your Email",
-      html: `<p>Click <a href="${verificationLink}">here</a> to verify.</p>`,
+      html: `<p>Click <a href="${verificationLink}">here</a> to verify your email.</p>`,
     }).catch(err => console.error("Email error:", err));
 
     res.status(201).json({ message: "Registration successful! Check your email." });
@@ -151,35 +151,24 @@ router.get("/profile", verifyToken, async (req, res) => {
     console.error("Error fetching profile:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
-});
-router.post("/register/ngo", async (req, res) => {
+});router.post("/register/ngo", async (req, res) => {
   const { name, email, password, organization } = req.body;
 
   try {
-    console.log("Incoming registration request for:", email);
-
     // Validate input
     if (!name || !email || !password || !organization) {
-      console.log("Missing required fields");
-      return res.status(400).json({ 
-        success: false,
-        message: "All fields are required" 
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     // Check for existing user
     const existingUser = await NGO.findOne({ email }) || await Volunteer.findOne({ email });
     if (existingUser) {
-      console.log("Email already exists:", email);
-      return res.status(400).json({ 
-        success: false,
-        message: "Email already registered" 
-      });
+      return res.status(400).json({ message: "Email already registered" });
     }
 
     // Hash password and create token
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     // Create NGO
     const newNGO = new NGO({
@@ -188,15 +177,14 @@ router.post("/register/ngo", async (req, res) => {
       password: hashedPassword,
       organization,
       role: "ngo",
-      verificationToken,
+      verificationToken, // Store token in the database if needed
       verificationExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
     });
 
     await newNGO.save();
-    console.log("NGO created successfully:", email);
 
     // Create verification link
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `http://localhost:3000/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
 
     // Send email
     await transporter.sendMail({
@@ -226,6 +214,8 @@ router.post("/register/ngo", async (req, res) => {
     });
   }
 });
+
+
  // @route  PUT /api/profile/update
 // @desc   Update user profile
 // @access Protected (requires authentication)
@@ -493,28 +483,30 @@ router.get("/pending", verifyToken, async (req, res) => {
   }
 });
 
-
 router.get("/verify-email", async (req, res) => {
-  const { token } = req.query;
+  const { token, email } = req.query;
+
+  if (!token || !email) {
+      return res.status(400).json({ message: 'Token and email are required.' });
+  }
 
   try {
-    // Find the NGO with the matching verification token
-    const ngo = await NGO.findOne({ verificationToken: token });
+      const decodedEmail = decodeURIComponent(email);
+      const user = await Volunteer.findOne({ email: decodedEmail, verificationToken: token }) ||
+                   await NGO.findOne({ email: decodedEmail, verificationToken: token });
 
-    if (!ngo) {
-      return res.status(400).send("Invalid or expired token.");
-    }
+      if (!user) {
+          return res.status(404).json({ message: 'Invalid or expired token.' });
+      }
 
-    // Mark the NGO as verified and clear the token
-    ngo.verified = true;
-    ngo.verificationToken = undefined;
-    await ngo.save();
+      user.verified = true;
+      user.verificationToken = undefined; // Clear the token
+      await user.save();
 
-    // Redirect to the login page
-    res.redirect("http://your-frontend-url.com/login");
+      res.redirect(`${process.env.FRONTEND_URL}/login`);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error. Please try again later.");
+      console.error('Email verification error:', error);
+      res.status(500).json({ message: 'Server error during verification.' });
   }
 });
 

@@ -6,7 +6,7 @@ const ManageNGO = () => {
 
   useEffect(() => {
     // Fetch NGO users from the API
-    fetch("https://eventmannagemnt-11.onrender.com/api/ngo/ngo-users")
+    fetch("http://localhost:5000/api/ngo/ngo-users")
       .then((res) => res.json())
       .then((data) => setNGOUsers(data))
       .catch((error) => console.error("Error fetching NGO users:", error));
@@ -16,7 +16,7 @@ const ManageNGO = () => {
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this NGO?")) return;
 
-    fetch(`https://eventmannagemnt-11.onrender.com/api/ngo/ngo-users/${id}`, { method: "DELETE" })
+    fetch(`http://localhost:5000/api/ngo/ngo-users/${id}`, { method: "DELETE" })
       .then((res) => res.json())
       .then(() => setNGOUsers(ngoUsers.filter((ngo) => ngo._id !== id)))
       .catch((error) => console.error("Error deleting NGO:", error));
@@ -24,7 +24,7 @@ const ManageNGO = () => {
 
   // Function to block/unblock NGO user
   const handleBlock = (id, status) => {
-    fetch(`https://eventmannagemnt-11.onrender.com/api/ngo/ngo-users/${id}`, {
+    fetch(`http://localhost:5000/api/ngo/ngo-users/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

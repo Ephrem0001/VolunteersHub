@@ -48,7 +48,7 @@ const RegisterNGO = () => {
     try {
       console.log("Submitting form data:", formData);
       
-      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/register/ngo", {
+      const response = await fetch("http://localhost:5000/api/auth/register/ngo", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

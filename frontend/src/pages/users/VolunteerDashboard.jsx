@@ -57,7 +57,7 @@ const VolunteerDashboard = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("https://eventmannagemnt-11.onrender.com/api/auth/profile", {
+        const response = await fetch("http://localhost:5000/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -94,7 +94,7 @@ const VolunteerDashboard = () => {
     const fetchApprovedEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://eventmannagemnt-11.onrender.com/api/events/approved");
+        const response = await fetch("http://localhost:5000/api/events/approved");
         const data = await response.json();
         
         const categorizedEvents = data.map(event => ({
@@ -783,22 +783,7 @@ const VolunteerDashboard = () => {
                           <span className="text-sm">Share</span>
                         </Button>
 
-                        <Button 
-                          className={`px-4 py-2 rounded-full text-white hover:shadow-lg transition-all ${
-                            event.category === 'environment' ? 'bg-green-500 hover:bg-green-600 hover:shadow-green-500/20' :
-                            event.category === 'education' ? 'bg-blue-500 hover:bg-blue-600 hover:shadow-blue-500/20' :
-                            event.category === 'health' ? 'bg-red-500 hover:bg-red-600 hover:shadow-red-500/20' :
-                            'bg-purple-500 hover:bg-purple-600 hover:shadow-purple-500/20'
-                          }`}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            registerForEvent(event._id);
-                          }}
-                        >
-                          Register Now
-                        </Button>
+                       
                       </motion.div>
                     </motion.div>
                   </Card>

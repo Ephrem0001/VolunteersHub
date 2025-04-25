@@ -6,7 +6,7 @@ const RejectedEvents = () => {
   const [eventToDelete, setEventToDelete] = useState(null);
 
   useEffect(() => {
-    fetch("https://eventmannagemnt-11.onrender.com/api/events/rejected", {
+    fetch("http://localhost:5000/api/events/rejected", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +23,7 @@ const RejectedEvents = () => {
   const unrejectEvent = async (eventId) => {
     try {
       const response = await fetch(
-        `https://eventmannagemnt-11.onrender.com/api/events/unreject/${eventId}`,
+        `http://localhost:5000/api/events/unreject/${eventId}`,
         {
           method: "PUT",
           headers: {
@@ -47,7 +47,7 @@ const RejectedEvents = () => {
   const deleteEvent = async (eventId) => {
     try {
       const response = await fetch(
-        `https://eventmannagemnt-11.onrender.com/api/events/delete/${eventId}`,
+        `http://localhost:5000/api/events/delete/${eventId}`,
         {
           method: "DELETE",
           headers: {

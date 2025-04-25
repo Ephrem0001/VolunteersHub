@@ -49,7 +49,7 @@ const EventDetailsPage = () => {
     const fetchEventDetails = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/events/${eventId}`);
+        const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
         if (!response.ok) throw new Error("Failed to fetch event details");
 
         const data = await response.json();

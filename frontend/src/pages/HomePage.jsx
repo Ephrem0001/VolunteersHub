@@ -35,6 +35,7 @@ const images = [
 ];
 
 const HomePage = () => {
+  // State declarations
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,12 +45,103 @@ const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const controls = useAnimation();
+  const [currentImage, setCurrentImage] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [currentSubtitleIndex, setCurrentSubtitleIndex] = useState(0);
+
+
+  // Refs
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
   const featuresRef = useRef(null);
+  
+  // Animation hooks
+  const controls = useAnimation();
+  const isInView = useInView(ref, { once: true });
   const [isFeaturesInView, setIsFeaturesInView] = useState(false);
-// Updated Testimonials data with Ethiopian names and local images
+
+  // Constants
+  const subtitles = [
+    "Connecting passion with purpose.",
+    "Building stronger communities together.",
+    "Amplifying impact through technology.",
+    "Your journey to meaningful service starts here."
+  ];
+
+  const backgroundImages = [
+    "https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1507679799987-c73779587ccf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+  ];
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentImage((prev) => (prev + 1) % backgroundImages.length);
+  }, 4000);
+  return () => clearInterval(interval);
+}, [backgroundImages.length]);
+
+
+  // Typing effect
+  useEffect(() => {
+    let i = 0;
+    const typingInterval = setInterval(() => {
+      if (i <= subtitles[currentSubtitleIndex].length) {
+        setTypedText(subtitles[currentSubtitleIndex].substring(0, i));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+        setTimeout(() => {
+          setCurrentSubtitleIndex((prev) => (prev + 1) % subtitles.length);
+        }, 2000);
+      }
+    }, 100);
+    return () => clearInterval(typingInterval);
+  }, [currentSubtitleIndex, subtitles]);
+
+  // CountUp component for animated numbers // CountUp component for animated numbers
+  const CountUp = ({ end, duration, delay = 0 }) => {
+    const [count, setCount] = useState(0);
+    const [hasStarted, setHasStarted] = useState(false);
+    const countRef = useRef(null);
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !hasStarted) {
+            setHasStarted(true);
+            let start = 0;
+            const increment = end / (duration * 60);
+            
+            const animation = setInterval(() => {
+              start += increment;
+              if (start >= end) {
+                setCount(end);
+                clearInterval(animation);
+              } else {
+                setCount(Math.floor(start));
+              }
+            }, 1000 / 60);
+
+            return () => clearInterval(animation);
+          }
+        },
+        { threshold: 0.1 }
+      );
+
+      if (countRef.current) {
+        observer.observe(countRef.current);
+      }
+
+      return () => {
+        if (countRef.current) {
+          observer.unobserve(countRef.current);
+        }
+      };
+    }, [end, duration, hasStarted]);
+
+    return <span ref={countRef}>{count}</span>;
+  };
 const testimonials = [
   {
     id: 1,
@@ -63,7 +155,7 @@ const testimonials = [
     name: "Tewodros Assefa",
     role: "Community Volunteer",
     content: "Through VolunteersHub, I've found opportunities to teach children in rural areas. The platform makes it easy to give back to my community.",
-    avatar: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
   },
   {
     id: 3,
@@ -285,60 +377,8 @@ const testimonials = [
     }
   };
 
-  const CountUp = ({ end, duration, delay = 0 }) => {
-    const [count, setCount] = useState(0);
-    const [hasStarted, setHasStarted] = useState(false);
-    const countRef = useRef(null);
-
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && !hasStarted) {
-            setHasStarted(true);
-            let start = 0;
-            const increment = end / (duration * 60);
-            
-            const animation = setInterval(() => {
-              start += increment;
-              if (start >= end) {
-                setCount(end);
-                clearInterval(animation);
-              } else {
-                setCount(Math.floor(start));
-              }
-            }, 1000 / 60);
-
-            return () => clearInterval(animation);
-          }
-        },
-        { threshold: 0.1 }
-      );
-
-      if (countRef.current) {
-        observer.observe(countRef.current);
-      }
-
-      return () => {
-        if (countRef.current) {
-          observer.unobserve(countRef.current);
-        }
-      };
-    }, [end, duration, hasStarted]);
-
-    return <span ref={countRef}>{count}</span>;
-  };
-
   const [currentImageIndex] = useState(0);
 
-  // Typing effect for hero subtitle
-  const [typedText, setTypedText] = useState("");
-  const subtitles = [
-    "Connecting passion with purpose.",
-    "Building stronger communities together.",
-    "Amplifying impact through technology.",
-    "Your journey to meaningful service starts here."
-  ];
-  const [currentSubtitleIndex, setCurrentSubtitleIndex] = useState(0);
 
   useEffect(() => {
     let i = 0;
@@ -368,46 +408,47 @@ const testimonials = [
   }, []);
 
   // Interactive feature cards
-  const FeatureCard = ({ icon, title, description, color, index }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const controls = useAnimation();
+ // Interactive feature cards
+ const FeatureCard = ({ icon, title, description, color, index }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const controls = useAnimation();
 
-    return (
+  return (
+    <motion.div
+      className={`relative overflow-hidden bg-white rounded-xl shadow-lg p-6 h-full transition-all duration-300 ${isHovered ? 'shadow-xl' : ''}`}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        controls.start({ y: -5, scale: 1.03 });
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        controls.start({ y: 0, scale: 1 });
+      }}
+      animate={controls}
+      initial={{ y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-600"></div>
       <motion.div
-        className={`relative overflow-hidden bg-white rounded-xl shadow-lg p-6 h-full transition-all duration-300 ${isHovered ? 'shadow-xl' : ''}`}
-        onMouseEnter={() => {
-          setIsHovered(true);
-          controls.start({ y: -5, scale: 1.03 });
-        }}
-        onMouseLeave={() => {
-          setIsHovered(false);
-          controls.start({ y: 0, scale: 1 });
-        }}
-        animate={controls}
-        initial={{ y: 0, scale: 1 }}
+        className={`text-4xl mb-4 ${color}`}
+        animate={isHovered ? { rotate: 10, scale: 1.1 } : { rotate: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 300 }}
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-600"></div>
-        <motion.div
-          className={`text-4xl mb-4 ${color}`}
-          animate={isHovered ? { rotate: 10, scale: 1.1 } : { rotate: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <FontAwesomeIcon icon={icon} />
-        </motion.div>
-        <h3 className="text-xl font-bold mb-2 text-gray-800">{title}</h3>
-        <p className="text-gray-600">{description}</p>
-        {isHovered && (
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-orange-50 to-white opacity-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
+        <FontAwesomeIcon icon={icon} />
       </motion.div>
-    );
-  };
+      <h3 className="text-xl font-bold mb-2 text-gray-800">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+      {isHovered && (
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-orange-50 to-white opacity-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ duration: 0.3 }}
+        />
+      )}
+    </motion.div>
+  );
+};
 
   return (
     <div className="pt-0 overflow-x-hidden">
@@ -465,218 +506,257 @@ const testimonials = [
           <FontAwesomeIcon icon={faChevronUp} />
         </motion.button>
       )}
+ 
+<section className="relative overflow-hidden min-h-screen flex items-center justify-center text-white">
+  {/* Background Slideshow with volunteer/donation-themed images */}
+  <div className="absolute inset-0 overflow-hidden">
+    {[
+      "https://images.unsplash.com/photo-1541535881962-3bb380b08458?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Hands together
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Food donation
+      "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Community service
+      "https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // People volunteering
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"  // Charity box
+    ].map((image, index) => (
+      <motion.div
+        key={index}
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${image})`,
+          zIndex: 0
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ 
+          opacity: currentImage === index ? 1 : 0,
+          scale: currentImage === index ? 1 : 1.05
+        }}
+        transition={{ 
+          duration: 1.5,
+          ease: "easeInOut"
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 via-purple-900/60 to-gray-900/80"></div>
+      </motion.div>
+    ))}
+  </div>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center text-white bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-        {/* Parallax Background Elements */}
-        <motion.div 
-          className="absolute inset-0 bg-[url('./np.jpg')] bg-cover bg-center opacity-20"
-          style={{ y: scrollY * 0.5 }}
-        />
-        
-        {/* Animated Background Particles */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {[...Array(30)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full bg-white opacity-10"
-              style={{
-                width: Math.random() * 10 + 5 + 'px',
-                height: Math.random() * 10 + 5 + 'px',
-                top: Math.random() * 100 + '%',
-                left: Math.random() * 100 + '%',
-              }}
-              animate={{
-                y: [0, (Math.random() - 0.5) * 100],
-                x: [0, (Math.random() - 0.5) * 100],
-                opacity: [0.1, 0.2, 0.1],
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "linear",
-              }}
-            />
-          ))}
-        </div>
+  {/* Content remains the same as before */}
+  <motion.div
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, ease: "easeOut" }}
+    className="relative z-10 px-6 py-20 text-center max-w-7xl mx-auto"
+  >
+    {/* Animated Logo/Badge */}
+    <motion.div
+      className="mx-auto mb-8 w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 shadow-lg flex items-center justify-center"
+      initial={{ scale: 0, rotate: -180 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ 
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        delay: 0.2
+      }}
+    >
+      <FontAwesomeIcon 
+        icon={faHandsHelping} 
+        className="text-white text-4xl" 
+      />
+    </motion.div>
 
-        {/* Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 px-6 py-20 text-center max-w-7xl mx-auto"
+    <motion.h1
+      className="text-5xl md:text-7xl font-extrabold mb-6"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: "easeOut" }}
+    >
+      <span className="block text-gray-300">Welcome to</span>
+      <span className="block mt-2 text-6xl md:text-8xl animate-gradient bg-gradient-to-r from-orange-400 via-yellow-300 to-orange-500 bg-clip-text text-transparent">
+        VolunteersHub
+      </span>
+    </motion.h1>
+
+    {/* Typing Effect with Multiple Lines */}
+    <motion.div
+      className="h-24 mb-8 flex flex-col items-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+    >
+      <p className="text-xl md:text-2xl text-gray-300 font-light italic mb-2">
+        {typedText}
+        <span className="ml-1 inline-block w-1 h-6 bg-orange-400 animate-pulse"></span>
+      </p>
+      <p className="text-lg text-orange-200 font-medium">
+        Empowering communities since 2015
+      </p>
+    </motion.div>
+
+    <motion.p
+      className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+    >
+      Join a community of <span className="font-semibold text-orange-300">10,000+ volunteers</span> and <span className="font-semibold text-blue-300">500+ organizations</span> 
+    </motion.p>
+
+    {/* CTA Buttons with Enhanced Effects */}
+    <motion.div
+      className="flex flex-col sm:flex-row justify-center gap-6 mb-16"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
+    >
+      <motion.div
+        whileHover={{ y: -5 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      >
+        <Link
+          to="/register-volunteer"
+          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 group"
         >
-          <motion.h1
-            className="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-yellow-300 to-orange-500"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
-            <span className="block">Welcome to</span>
-            <span className="block mt-2 text-6xl md:text-8xl animate-gradient bg-gradient-to-r from-orange-400 via-yellow-300 to-orange-500 bg-clip-text text-transparent">
-              VolunteersHub
-            </span>
-          </motion.h1>
+          <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          <span className="relative z-10 flex items-center">
+            <FontAwesomeIcon icon={faHandsHelping} className="h-6 w-6 mr-2" />
+            Join as Volunteer
+          </span>
+          <span className="absolute right-4 group-hover:right-6 transition-all duration-300">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </span>
+        </Link>
+      </motion.div>
 
-          <motion.div
-            className="h-16 mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <p className="text-xl md:text-2xl text-gray-300 font-light italic">
-              {typedText}
-              <span className="ml-1 inline-block w-1 h-6 bg-orange-400 animate-pulse"></span>
-            </p>
-          </motion.div>
+      <motion.div
+        whileHover={{ y: -5 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      >
+        <Link
+          to="/register-ngo"
+          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group"
+        >
+          <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          <span className="relative z-10 flex items-center">
+            <FontAwesomeIcon icon={faUsers} className="h-6 w-6 mr-2" />
+            Register Your NGO
+          </span>
+          <span className="absolute right-4 group-hover:right-6 transition-all duration-300">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </span>
+        </Link>
+      </motion.div>
+    </motion.div>
 
-          <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-          >
-            Join a community of passionate individuals and organizations dedicated to making a difference. Whether you're an NPO looking for support or a volunteer eager to contribute, VolunteersHub is your gateway to meaningful change.
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row justify-center gap-6 mb-16"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
-          >
-            <motion.div
-              whileHover={{ y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Link
-                to="/register-volunteer"
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
-              >
-                <FontAwesomeIcon icon={faHandsHelping} className="h-6 w-6" />
-                Join as Volunteer
-              </Link>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <Link
-                to="/register-ngo"
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300"
-              >
-                <FontAwesomeIcon icon={faUsers} className="h-6 w-6" />
-                Register Your NGO
-              </Link>
-            </motion.div>
-          </motion.div>
-
+        {/* Secondary CTA */}
+        <motion.div
+          className="flex flex-col items-center gap-6 mb-16"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
           <motion.button
             onClick={() => setIsVideoModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium text-white bg-transparent border-2 border-white rounded-xl hover:bg-white hover:text-gray-900 transition-all duration-300 mb-16"
+            className="relative overflow-hidden inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium text-white bg-transparent border-2 border-white rounded-xl hover:bg-white hover:text-gray-900 transition-all duration-300 group"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
+            <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
             </svg>
             Watch Our Story
           </motion.button>
 
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            {[
-              { number: "10K+", label: "Volunteers", icon: faUser },
-              { number: "500+", label: "NGOs", icon: faUsers },
-              { number: "1M+", label: "Hours Donated", icon: faHeart },
-              { number: "50+", label: "Cities", icon: faMapMarkerAlt }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-colors duration-300"
-                whileHover={{ y: -5 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + index * 0.1 }}
-              >
+          <div className="text-gray-400 text-sm flex items-center gap-2">
+            <span>Trusted by organizations worldwide</span>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <svg key={star} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+              <span className="text-gray-300 ml-1">4.9/5</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats with Interactive Hover Effects */}
+        <motion.div
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          {[
+            { number: "10K+", label: "Volunteers", icon: faUser, color: "from-orange-400 to-orange-500" },
+            { number: "500+", label: "NGOs", icon: faUsers, color: "from-blue-400 to-blue-500" },
+            { number: "1M+", label: "Hours Donated", icon: faHeart, color: "from-red-400 to-red-500" },
+            { number: "50+", label: "Cities", icon: faMapMarkerAlt, color: "from-purple-400 to-purple-500" }
+          ].map((stat, index) => (
+            <motion.div
+              key={index}
+              className="relative bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300 overflow-hidden group"
+              whileHover={{ y: -5 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 + index * 0.1 }}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+              <div className="relative z-10 flex flex-col items-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <FontAwesomeIcon icon={stat.icon} className="text-orange-400 text-xl" />
-                  <div className="text-3xl md:text-4xl font-bold text-orange-400">
+                  <FontAwesomeIcon icon={stat.icon} className="text-orange-400 text-xl group-hover:text-white transition-colors duration-300" />
+                  <div className="text-3xl md:text-4xl font-bold text-orange-400 group-hover:text-white transition-colors duration-300">
                     <CountUp end={parseInt(stat.number)} duration={2} delay={0.5 + index * 0.2} />
                     {stat.number.includes('+') && '+'}
                   </div>
                 </div>
-                <div className="text-sm md:text-base text-gray-300">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
+                <div className="text-sm md:text-base text-gray-300 group-hover:text-white transition-colors duration-300">{stat.label}</div>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* Floating Illustrations */}
-        <motion.div
-          className="absolute bottom-10 left-10 opacity-70"
-          animate={{ y: [0, 15, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg width="120" height="120" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100 0C44.8 0 0 44.8 0 100C0 155.2 44.8 200 100 200C155.2 200 200 155.2 200 100C200 44.8 155.2 0 100 0ZM100 180C56 180 20 144 20 100C20 56 56 20 100 20C144 20 180 56 180 100C180 144 144 180 100 180Z" fill="url(#paint0_linear)"/>
-            <path d="M100 40C67.2 40 40 67.2 40 100C40 132.8 67.2 160 100 160C132.8 160 160 132.8 160 100C160 67.2 132.8 40 100 40ZM100 140C78.4 140 60 121.6 60 100C60 78.4 78.4 60 100 60C121.6 60 140 78.4 140 100C140 121.6 121.6 140 100 140Z" fill="url(#paint1_linear)"/>
-            <path d="M100 80C89.6 80 80 89.6 80 100C80 110.4 89.6 120 100 120C110.4 120 120 110.4 120 100C120 89.6 110.4 80 100 80Z" fill="url(#paint2_linear)"/>
-            <defs>
-              <linearGradient id="paint0_linear" x1="100" y1="0" x2="100" y2="200" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#F97316"/>
-                <stop offset="1" stopColor="#F59E0B"/>
-              </linearGradient>
-              <linearGradient id="paint1_linear" x1="100" y1="40" x2="100" y2="160" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#F97316"/>
-                <stop offset="1" stopColor="#F59E0B"/>
-              </linearGradient>
-              <linearGradient id="paint2_linear" x1="100" y1="80" x2="100" y2="120" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#F97316"/>
-                <stop offset="1" stopColor="#F59E0B"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </motion.div>
-
-        <motion.div
-          className="absolute top-20 right-20 opacity-70"
-          animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <svg width="150" height="150" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M100 0L120 40H80L100 0Z" fill="#3B82F6"/>
-            <path d="M100 200L80 160H120L100 200Z" fill="#3B82F6"/>
-            <path d="M0 100L40 120V80L0 100Z" fill="#3B82F6"/>
-            <path d="M200 100L160 80V120L200 100Z" fill="#3B82F6"/>
-            <path d="M28.28 28.28L56.56 56.56L42.42 70.7L14.14 42.42L28.28 28.28Z" fill="#3B82F6"/>
-            <path d="M171.72 171.72L143.44 143.44L157.58 129.3L185.86 157.58L171.72 171.72Z" fill="#3B82F6"/>
-            <path d="M28.28 171.72L14.14 157.58L42.42 129.3L56.56 143.44L28.28 171.72Z" fill="#3B82F6"/>
-            <path d="M171.72 28.28L185.86 42.42L157.58 70.7L143.44 56.56L171.72 28.28Z" fill="#3B82F6"/>
-          </svg>
-        </motion.div>
-
-        {/* Scrolling Arrow Indicator */}
+        {/* Scrolling Arrow Indicator with Pulse Animation */}
         <motion.div
           className="absolute bottom-10 left-1/2 transform -translate-x-1/2 cursor-pointer"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ 
+            y: [0, 10, 0],
+            opacity: [0.7, 1, 0.7]
+          }}
+          transition={{ 
+            duration: 2, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
           onClick={(e) => handleAnchorClick(e, 'about')}
         >
-          <svg className="w-10 h-10 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
+          <div className="relative">
+            <svg className="w-10 h-10 text-white hover:text-orange-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+            <motion.div
+              className="absolute inset-0 rounded-full border-2 border-white opacity-0"
+              animate={{
+                scale: [1, 1.5],
+                opacity: [0, 0.3, 0]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeOut"
+              }}
+            />
+          </div>
+          <p className="text-xs text-gray-300 mt-1">Explore More</p>
         </motion.div>
-      </section>
+      </motion.div>
+    </section>
 
       {/* About Section */}
       <section id="about" className="py-20 bg-white">
@@ -1204,7 +1284,7 @@ const testimonials = [
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-gray-700">Email</h4>
-                      <a href="mailto:info@volunteershub.com" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">info@volunteershub.com</a>
+                      <a href="mailto:Ethio@volunteershub.com" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">Ethio@volunteershub.com</a>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -1213,7 +1293,7 @@ const testimonials = [
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-gray-700">Phone</h4>
-                      <a href="tel:+1234567890" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">+1 (234) 567-890</a>
+                      <a href="tel:+987247190" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">+251 (987) 247-190</a>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -1222,7 +1302,7 @@ const testimonials = [
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold text-gray-700">Address</h4>
-                      <p className="text-gray-600">123 Volunteer Street, Community City, CC 12345</p>
+                      <p className="text-gray-600">Addis Ababa , Ethiopia, CC 12345</p>
                     </div>
                   </div>
                 </div>

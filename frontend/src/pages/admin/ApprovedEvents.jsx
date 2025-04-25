@@ -11,7 +11,7 @@ const ApprovedEvents = () => {
 
   const fetchApprovedEvents = async () => {
     try {
-      const response = await fetch("https://eventmannagemnt-11.onrender.com/api/events/approved");
+      const response = await fetch("http://localhost:5000/api/events/approved");
       
 
       if (!response.ok) {
@@ -27,7 +27,7 @@ const ApprovedEvents = () => {
 
   const disapproveEvent = async (eventId) => {
     try {
-      const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/events/disapprove/${eventId}`, {
+      const response = await fetch(`http://localhost:5000/api/events/disapprove/${eventId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +48,7 @@ const ApprovedEvents = () => {
 
   const deleteEvent = async (eventId) => {
     try {
-      const response = await fetch(`https://eventmannagemnt-11.onrender.com/api/events/delete/${eventId}`, {
+      const response = await fetch(`http://localhost:5000/api/events/delete/${eventId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

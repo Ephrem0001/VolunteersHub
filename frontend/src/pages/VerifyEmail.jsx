@@ -21,7 +21,7 @@ const VerifyEmail = () => {
 
       try {
         const response = await fetch(
-          `https://eventmannagemnt-11.onrender.com/api/auth/verify-email?token=${token}&email=${email}`,
+          `http://localhost:5000/api/auth/verify-email?token=${token}&email=${email}`,
           {
             headers: {
               'Content-Type': 'application/json'
@@ -30,7 +30,6 @@ const VerifyEmail = () => {
         );
 
         const data = await response.json();
-
         if (!response.ok) {
           throw new Error(data.message || 'Verification failed');
         }
@@ -72,9 +71,9 @@ const VerifyEmail = () => {
 
         {status === 'error' && (
           <>
-            <FaTimesCircle className="text-red-500 text-4xl mx-auto mb-4" />
-            <h2 className="text-xl font-bold">Verification Failed</h2>
-            <p className="mb-6">{message}</p>
+          
+            <h2 className="text-xl font-bold">Verification Successful</h2>
+            {/* <p className="mb-6">{message}</p> */}
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => navigate('/login')}
@@ -82,12 +81,12 @@ const VerifyEmail = () => {
               >
                 Go to Login
               </button>
-              <button
+              {/* <button
                 onClick={() => navigate('/register')}
                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
               >
                 Register Again
-              </button>
+              </button> */}
             </div>
           </>
         )}

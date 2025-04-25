@@ -406,7 +406,7 @@ const ManageEvents = () => {
                 </select>
                 
                 <button
-                  onClick={() => navigate("/create-event")}
+                  onClick={() => navigate("/ngo/create-event")}
                   className="px-4 py-2 bg-gradient-to-r from-teal-500 to-green-600 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center"
                   data-tooltip-id="create-tooltip"
                 >

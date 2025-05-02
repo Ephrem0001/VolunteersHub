@@ -25,7 +25,8 @@ import {
   faLightbulb,
   faChartLine,
   faRocket,
-  faSmile
+  faSmile,
+ 
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebook, faTwitter, faInstagram, faLinkedin } from "@fortawesome/free-brands-svg-icons";
@@ -49,7 +50,12 @@ const HomePage = () => {
   const [typedText, setTypedText] = useState("");
   const [currentSubtitleIndex, setCurrentSubtitleIndex] = useState(0);
 
-
+// Add this state near your other state declarations
+const [formStatus, setFormStatus] = useState({
+  show: false,
+  message: '',
+  type: '' // 'success' or 'error'
+});
   // Refs
   const ref = useRef(null);
   const featuresRef = useRef(null);
@@ -355,28 +361,52 @@ const testimonials = [
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/contact', data);
-      if (response.status === 200) {
-        // Show success notification
-        document.dispatchEvent(new CustomEvent('show-notification', {
-          detail: {
-            message: "Your message has been sent successfully!",
-            type: "success"
+      const response = await axios.post(
+        'http://localhost:5000/api/contact',
+        data,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
           }
-        }));
-        reset();
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      document.dispatchEvent(new CustomEvent('show-notification', {
-        detail: {
-          message: error.response?.data?.message || "Failed to send message. Please try again.",
-          type: "error"
         }
-      }));
+      );
+  
+      // Show success tooltip
+      setFormStatus({
+        show: true,
+        message: "Your message has been successfully sent!",
+        type: "success"
+      });
+  
+      // Reset form after successful submission
+      reset();
+  
+      // Hide tooltip after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ show: false, message: '', type: '' });
+      }, 5000);
+    } catch (error) {
+      console.error('Full error:', error);
+      let errorMessage = "Failed to send message. Please try again.";
+      
+      if (error.code === 'ERR_NETWORK') {
+        errorMessage = "Cannot connect to server. Please check your connection.";
+      } else if (error.response) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+  
+      setFormStatus({
+        show: true,
+        message: errorMessage,
+        type: "error"
+      });
+  
+      setTimeout(() => {
+        setFormStatus({ show: false, message: '', type: '' });
+      }, 5000);
     }
   };
-
   const [currentImageIndex] = useState(0);
 
 
@@ -1177,164 +1207,226 @@ const testimonials = [
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Get In Touch</h2>
-            <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Have questions or want to learn more? We'd love to hear from you.
-            </p>
-          </motion.div>
+<section id="contact" className="py-20 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-6">
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+      className="text-center mb-16"
+    >
+      <h2 className="text-4xl font-bold text-gray-900 mb-4">Get In Touch</h2>
+      <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
+      <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        Have questions or want to learn more? We'd love to hear from you.
+      </p>
+    </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white p-8 rounded-xl shadow-lg"
-            >
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Send us a message</h3>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    {...register("name", { required: "Name is required" })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                  {errors.name && <p className="mt-1 text-red-500 text-sm">{errors.name.message}</p>}
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    {...register("email", { 
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address"
-                      }
-                    })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                  {errors.email && <p className="mt-1 text-red-500 text-sm">{errors.email.message}</p>}
-                </div>
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input
-                    type="text"
-                    id="subject"
-                    {...register("subject", { required: "Subject is required" })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                  {errors.subject && <p className="mt-1 text-red-500 text-sm">{errors.subject.message}</p>}
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                  <textarea
-                    id="message"
-                    rows="4"
-                    {...register("message", { required: "Message is required" })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  ></textarea>
-                  {errors.message && <p className="mt-1 text-red-500 text-sm">{errors.message.message}</p>}
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+    <div className="grid md:grid-cols-2 gap-12">
+      {/* Contact Form */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="bg-white p-8 rounded-xl shadow-lg"
+      >
+        <h3 className="text-2xl font-bold text-gray-800 mb-6">Send us a message</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              {...register("name", { required: "Name is required" })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            {errors.name && (
+              <p className="mt-1 text-red-500 text-sm">{errors.name.message}</p>
+            )}
+          </div>
+          
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              {...register("email", { 
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address"
+                }
+              })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            {errors.email && (
+              <p className="mt-1 text-red-500 text-sm">{errors.email.message}</p>
+            )}
+          </div>
+          
+          <div>
+            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+              Subject
+            </label>
+            <input
+              type="text"
+              id="subject"
+              {...register("subject", { required: "Subject is required" })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            {errors.subject && (
+              <p className="mt-1 text-red-500 text-sm">{errors.subject.message}</p>
+            )}
+          </div>
+          
+          <div>
+            <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+              Message
+            </label>
+            <textarea
+              id="message"
+              rows="4"
+              {...register("message", { required: "Message is required" })}
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            ></textarea>
+            {errors.message && (
+              <p className="mt-1 text-red-500 text-sm">{errors.message.message}</p>
+            )}
+          </div>
+          <div className="relative">
+          <button
+    type="submit"
+    disabled={isSubmitting}
+    className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+  >
+    {isSubmitting ? 'Sending...' : 'Send Message'}
+  </button>
+   {/* Tooltip Notification */}
+   <AnimatePresence>
+    {formStatus.show && (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.3 }}
+        className={`absolute -top-12 left-0 right-0 mx-auto w-max px-4 py-2 rounded-md shadow-lg ${
+          formStatus.type === 'error' 
+            ? 'bg-red-500 text-white' 
+            : 'bg-green-500 text-white'
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          {formStatus.type === 'error' ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+          <span>{formStatus.message}</span>
+        </div>
+        {/* Tooltip arrow */}
+        <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 
+          border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent ${
+            formStatus.type === 'error' 
+              ? 'border-t-red-500' 
+              : 'border-t-green-500'
+          }`}></div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
+        </form>
+      </motion.div>
+
+      {/* Contact Info */}
+      <motion.div
+        initial={{ opacity: 0, x: 50 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="space-y-8"
+      >
+        <div className="bg-white p-8 rounded-xl shadow-lg">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6">Contact Information</h3>
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-orange-100 p-3 rounded-full text-orange-500">
+                <FontAwesomeIcon icon={faEnvelope} />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-700">Email</h4>
+                <a 
+                  href="mailto:Ethio@volunteershub.com" 
+                  className="text-gray-600 hover:text-orange-500 transition-colors duration-300"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
-                {isSubmitSuccessful && (
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-green-600 text-sm text-center"
-                  >
-                    Your message has been sent successfully!
-                  </motion.p>
-                )}
-              </form>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="space-y-8"
-            >
-              <div className="bg-white p-8 rounded-xl shadow-lg">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">Contact Information</h3>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                      <FontAwesomeIcon icon={faEnvelope} />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-700">Email</h4>
-                      <a href="mailto:Ethio@volunteershub.com" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">Ethio@volunteershub.com</a>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                      <FontAwesomeIcon icon={faPhone} />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-700">Phone</h4>
-                      <a href="tel:+987247190" className="text-gray-600 hover:text-orange-500 transition-colors duration-300">+251 (987) 247-190</a>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                      <FontAwesomeIcon icon={faMapMarkerAlt} />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-700">Address</h4>
-                      <p className="text-gray-600">Addis Ababa , Ethiopia, CC 12345</p>
-                    </div>
-                  </div>
-                </div>
+                  Ethio@volunteershub.com
+                </a>
               </div>
-
-              <div className="bg-white p-8 rounded-xl shadow-lg">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">Follow Us</h3>
-                <div className="flex justify-center gap-6">
-                  {[
-                    { icon: faFacebook, color: "text-blue-600", url: "#" },
-                    { icon: faTwitter, color: "text-blue-400", url: "#" },
-                    { icon: faInstagram, color: "text-pink-500", url: "#" },
-                    { icon: faLinkedin, color: "text-blue-700", url: "#" }
-                  ].map((social, index) => (
-                    <motion.a
-                      key={index}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`text-3xl ${social.color} hover:opacity-80 transition-opacity duration-300`}
-                      whileHover={{ y: -5, scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <FontAwesomeIcon icon={social.icon} />
-                    </motion.a>
-                  ))}
-                </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="bg-orange-100 p-3 rounded-full text-orange-500">
+                <FontAwesomeIcon icon={faPhone} />
               </div>
-            </motion.div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-700">Phone</h4>
+                <a 
+                  href="tel:+987247190" 
+                  className="text-gray-600 hover:text-orange-500 transition-colors duration-300"
+                >
+                  +251 (987) 247-190
+                </a>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="bg-orange-100 p-3 rounded-full text-orange-500">
+                <FontAwesomeIcon icon={faMapMarkerAlt} />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-700">Address</h4>
+                <p className="text-gray-600">Addis Ababa, Ethiopia, CC 12345</p>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* Social Media */}
+        <div className="bg-white p-8 rounded-xl shadow-lg">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6">Follow Us</h3>
+          <div className="flex justify-center gap-6">
+            {[
+              { icon: faFacebook, color: "text-blue-600", url: "#" },
+              { icon: faTwitter, color: "text-blue-400", url: "#" },
+              { icon: faInstagram, color: "text-pink-500", url: "#" },
+              { icon: faLinkedin, color: "text-blue-700", url: "#" }
+            ].map((social, index) => (
+              <motion.a
+                key={index}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`text-3xl ${social.color} hover:opacity-80 transition-opacity duration-300`}
+                whileHover={{ y: -5, scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <FontAwesomeIcon icon={social.icon} />
+              </motion.a>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </div>
+</section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">

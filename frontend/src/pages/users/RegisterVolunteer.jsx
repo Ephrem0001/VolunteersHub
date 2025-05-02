@@ -22,11 +22,6 @@ const RegisterVolunteer = () => {
   });
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState({
-    facebook: false,
-    twitter: false,
-    google: false
-  });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -57,37 +52,6 @@ const RegisterVolunteer = () => {
       setLoading(false);
       console.error("Registration failed:", error);
       alert("An error occurred while registering.");
-    }
-  };
-
-  // Function to handle social media registration
-  const handleSocialRegister = async (provider) => {
-    setSocialLoading(prev => ({ ...prev, [provider]: true }));
-    
-    try {
-      // Determine the OAuth URL based on the provider
-      let authUrl;
-      switch (provider) {
-        case 'facebook':
-          authUrl = `http://localhost:5000/api/auth/facebook?userType=volunteer`;
-          break;
-        case 'google':
-          authUrl = `http://localhost:5000/api/auth/google?userType=volunteer`;
-          break;
-        case 'twitter':
-          authUrl = `http://localhost:5000/api/auth/twitter?userType=volunteer`;
-          break;
-        default:
-          throw new Error('Invalid provider');
-      }
-
-      // Redirect to the OAuth URL
-      window.location.href = authUrl;
-      
-    } catch (error) {
-      console.error(`${provider} registration failed:`, error);
-      alert(`An error occurred during ${provider} registration.`);
-      setSocialLoading(prev => ({ ...prev, [provider]: false }));
     }
   };
 
@@ -360,29 +324,18 @@ const RegisterVolunteer = () => {
               transition={{ delay: 1.3 }}
             >
               {[
-                { provider: 'facebook', icon: FaFacebook, color: "bg-blue-600 hover:bg-blue-700", label: "Facebook" },
-                { provider: 'twitter', icon: FaTwitter, color: "bg-sky-500 hover:bg-sky-600", label: "Twitter" },
-                { provider: 'google', icon: FaGoogle, color: "bg-red-600 hover:bg-red-700", label: "Google" },
-              ].map(({ provider, icon: Icon, color, label }, index) => (
+                { icon: FaFacebook, color: "bg-blue-600 hover:bg-blue-700", label: "Facebook" },
+                { icon: FaTwitter, color: "bg-sky-500 hover:bg-sky-600", label: "Twitter" },
+                { icon: FaGoogle, color: "bg-red-600 hover:bg-red-700", label: "Google" },
+              ].map(({ icon: Icon, color, label }, index) => (
                 <motion.button
                   key={label}
                   type="button"
-                  onClick={() => handleSocialRegister(provider)}
-                  className={`flex items-center justify-center py-2.5 rounded-lg ${color} text-white transition-colors ${
-                    socialLoading[provider] && "opacity-70 cursor-not-allowed"
-                  }`}
+                  className={`flex items-center justify-center py-2.5 rounded-lg ${color} text-white transition-colors`}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  disabled={socialLoading[provider]}
                 >
-                  {socialLoading[provider] ? (
-                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  ) : (
-                    <Icon className="text-xl" />
-                  )}
+                  <Icon className="text-xl" />
                 </motion.button>
               ))}
             </motion.div>

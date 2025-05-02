@@ -35,6 +35,8 @@ import SuccessStories from "./pages/SuccessStories.jsx";
 import ForgotPassword from "./pages/users/ForgotPassword.jsx";
 import ResetPassword from "./pages/users/ResetPassword.jsx";
 import EditEvent from "./pages/ngo/EditEvent.jsx";
+import Teams from "./pages/ngo/Teams.jsx";
+import ContactMessages from "./pages/admin/ContactMessages.jsx";
 // import ManageEvents from "./pages/ngo/ManageEvents.jsx";
 const App = () => {
   return (
@@ -86,7 +88,8 @@ const App = () => {
         {/* Admin Protected Routes */}
         <Route path="/admindashboard" element={<AdminDashboard />} />
          <Route path="/admin-dashboard/approve-events" element={<AdminRoute role="admin"><ApproveEvents/></AdminRoute> }/>
-        
+         <Route path="/admin-dashboard/contact-messages" element={<AdminRoute role="admin"><ContactMessages/></AdminRoute> }/>
+
         <Route path="/admin-dashboard/manage-ngo" element={ <AdminRoute role="admin"><ManageNGO /></AdminRoute> }/>
         <Route path="/admin-dashboard/ManageVolunteer" element={ <AdminRoute role="admin"><ManageVolunteer/></AdminRoute> }/>
         <Route path="/admin-dashboard/approved-events" element={ <AdminRoute role="admin"><ApprovedEvents/></AdminRoute> }/>
@@ -97,6 +100,7 @@ const App = () => {
         {/* <Route path="/ngo/ngodashboard" element={<NgoRoute role="ngo"><NgoDashboard /></NgoRoute>} />   
               */}
         <Route path="/ngo/ngodashboard" element={ <NgoDashboard />} /> 
+        <Route path="/ngo/teams" element={ <Teams/>} /> 
         <Route path="/analytics/dashboard" element={ <Dashboard />} /> 
         <Route path="/ngo/manage-events" element={ <ManageEvents  />} /> 
         <Route path="/ngo/edit-event/:id" element={<EditEvent />} />

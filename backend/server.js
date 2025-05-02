@@ -10,7 +10,6 @@ const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 const { checkExpiredEvents } = require("./models/Event");
 const analyticsRoutes = require('./routes/analyticsRoutes');
-
 // Initialize Express app
 const app = express();
 
@@ -22,6 +21,7 @@ const ngoRoutes = require("./routes/ngoRoutes");
 const userRoutes = require("./routes/usersRoute");
 const uprofileRoutes = require("./routes/uprofileRoutes");
 const edit = require("./routes/edit")
+const contactRoutes = require('./routes/contact');
 
 // Middleware configuration
 // Replace your current CORS configuration with this:
@@ -95,6 +95,7 @@ app.use("/api/ngo", ngoRoutes);
 app.use("/api", userRoutes);
 app.use("/api/volunteer", uprofileRoutes);
 app.use("/api/edit",edit)
+app.use('/api/contact', contactRoutes);
 // Health endpoints
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });

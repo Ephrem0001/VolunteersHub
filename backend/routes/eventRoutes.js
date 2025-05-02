@@ -502,7 +502,7 @@ router.put("/approve/:id", async (req, res) => {
       console.log("📧 Sending email to:", ngo.email);
 
       await sendApprovalEmail(ngo.email, event.name);
-      res.json({ message: "Event approved successfully" });
+      res.json({ message: "Event approved successfully Approval email is sent to NGO" });
   } catch (error) {
       console.error("❌ Error approving event:", error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -738,5 +738,15 @@ router.put('/events/:id', verifyToken, async (req, res) => {
     });
   }
 });
-
+// // Example backend route (Node.js/Express)
+// router.get('/api/events/:eventId/volunteers', async (req, res) => {
+//   try {
+//     const eventId = req.params.eventId;
+//     const count = await Volunteer.countDocuments({ eventId });
+//     res.json({ count });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// });
 module.exports = router;

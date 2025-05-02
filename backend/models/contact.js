@@ -24,4 +24,7 @@ const contactSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Contact', contactSchema);
+// Check if model already exists before compiling
+const Contact = mongoose.models.Contact || mongoose.model('Contact', contactSchema);
+
+module.exports = Contact;

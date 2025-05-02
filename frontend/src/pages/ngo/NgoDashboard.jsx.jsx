@@ -127,13 +127,13 @@ const NgoDashboard = () => {
       path: "/analytics/dashboard",
       gradient: "from-red-600 to-pink-600"
     },
-    {
-      icon: <FaUserCog className="text-4xl text-cyan-400" />,
-      title: "Settings",
-      description: "Manage your organization profile",
-      path: "/ngo/ngo-settings",
-      gradient: "from-cyan-600 to-sky-600"
-    }
+    // {
+    //   icon: <FaUserCog className="text-4xl text-cyan-400" />,
+    //   title: "Settings",
+    //   description: "Manage your organization profile",
+    //   path: "/ngo/ngo-settings",
+    //   gradient: "from-cyan-600 to-sky-600"
+    // }
   ];
 
   const quickStats = [

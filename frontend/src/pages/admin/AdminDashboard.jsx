@@ -14,7 +14,8 @@ import {
   FaRegCalendarCheck,
   FaRegCalendarTimes,
   FaCog,
-  FaBell
+  FaBell,
+  FaEnvelope
 } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
 import ManageNGO from "./ManageNGO";
@@ -22,7 +23,7 @@ import ManageVolunteer from "./ManageVolunteer";
 import ApproveEvents from "./ApproveEvents";
 import ApprovedEvents from "./ApprovedEvents";
 import RejectedEvents from "./RejectedEvents";
-
+import ContactMessages from './ContactMessages';
 // Register Chart.js components
 Chart.register(...registerables);
 
@@ -103,6 +104,7 @@ const AdminDashboard = () => {
     { key: "approved-events", icon: FaCheck, label: "Approved Events" },
     { key: "rejected-events", icon: FaRegCalendarTimes, label: "Rejected Events" },
     { key: "analytics", icon: FaChartLine, label: "Analytics" },
+    { key: "contact-messages", icon: FaEnvelope, label: "Contact Messages" }, // Add this line
     { key: "settings", icon: FaCog, label: "Settings" }
   ];
 
@@ -112,6 +114,7 @@ const AdminDashboard = () => {
     "approve-events": "Pending Event Approvals",
     "approved-events": "Approved Events",
     "rejected-events": "Rejected Events",
+    "contact-messages": "Contact Messages", // Add this line
     "analytics": "System Analytics",
     "settings": "Admin Settings"
   };
@@ -536,6 +539,7 @@ const AdminDashboard = () => {
                 {activeTab === "approved-events" && "View all approved events"}
                 {activeTab === "rejected-events" && "View rejected events"}
                 {activeTab === "analytics" && "System usage statistics"}
+                {activeTab === "contact-messages" && "View and manage all contact form submissions"}
                 {activeTab === "settings" && "Configure system settings"}
               </p>
             </div>
@@ -568,6 +572,7 @@ const AdminDashboard = () => {
                 {activeTab === "approve-events" && <ApproveEvents />}
                 {activeTab === "approved-events" && <ApprovedEvents />}
                 {activeTab === "rejected-events" && <RejectedEvents />}
+                {activeTab === "contact-messages" && <ContactMessages />} {/* Add this line */}
                 {activeTab === "analytics" && <AnalyticsDashboard />}
                 {activeTab === "settings" && <SettingsPanel />}
               </div>

@@ -84,6 +84,11 @@ const EventDetailsPage = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          // TEMP: Set a dummy user for testing
+          setCurrentUser({ _id: "123", name: "Test User" });
+          return;
+        }
         const response = await fetch("http://localhost:5000/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -95,89 +100,65 @@ const EventDetailsPage = () => {
         console.error("Error fetching user data:", error);
       }
     };
-
+  
     fetchUserData();
   }, []);
 
-  useEffect(() => {
-    const fetchEventDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
-        if (!response.ok) throw new Error("Failed to fetch event details");
-
-        const data = await response.json();
-        setEvent(data);
-        setVolunteerCount(data.volunteers || 0);
-
-        // Initialize likes from API
-        const likesResponse = await fetch(`http://localhost:5000/api/events/${eventId}/likes`);
-        const likesData = await likesResponse.json();
-        setLikes(likesData.likes || []);
-
-        // Check if current user has liked this event
-        if (currentUser) {
-          setIsLiked(likesData.likes.includes(currentUser._id));
-        }
-
-        // Check if bookmarked
-        const bookmarkStatus = localStorage.getItem(`event_${eventId}_bookmarked`);
-        setIsBookmarked(bookmarkStatus === "true");
-
-        // Load comments from API
-        const commentsResponse = await fetch(`http://localhost:5000/api/events/${eventId}/comments`);
-        const commentsData = await commentsResponse.json();
-        setCommentList(commentsData.comments || []);
-
-        // Load rating
-        const storedRating = localStorage.getItem(`event_${eventId}_rating`);
-        setRating(storedRating ? parseInt(storedRating) : 0);
-
-        // Check if subscribed
-        const subStatus = localStorage.getItem(`event_${eventId}_subscribed`);
-        setSubscribed(subStatus === "true");
-      } catch (error) {
-        console.error("Error fetching event details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEventDetails();
-  }, [eventId, currentUser]);
-
-  const handleLike = async () => {
+  const fetchEventDetails = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: currentUser._id,
-          like: !isLiked
-        })
-      });
-
-      if (!response.ok) throw new Error("Failed to update like");
-
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
+      if (!response.ok) throw new Error("Failed to fetch event details");
       const data = await response.json();
-      setLikes(data.likes);
-      setIsLiked(!isLiked);
-
-      showNotification(
-        !isLiked 
-          ? "You liked this event!" 
-          : "You unliked this event",
-        !isLiked ? "success" : "info"
-      );
+      setEvent(data);
+      setVolunteerCount(Array.isArray(data.volunteers) ? data.volunteers.length : 0);
     } catch (error) {
-      console.error("Error updating like:", error);
-      showNotification("Failed to update like", "error");
+      console.error("Error fetching event details:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEventDetails();
+  }, [eventId]); // Add `registered` or similar state that changes after registration  // ...existing code...
+const handleLike = async () => {
+  if (!currentUser || !currentUser._id) {
+    showNotification("You must be logged in to like events.", "error");
+    return;
+  }
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`http://localhost:5000/api/events/${eventId}/like`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userId: currentUser._id,
+        like: !isLiked
+      })
+    });
+
+    if (!response.ok) throw new Error("Failed to update like");
+
+    const data = await response.json();
+    setLikes(data.likes);
+    setIsLiked(!isLiked);
+
+    showNotification(
+      !isLiked 
+        ? "You liked this event!" 
+        : "You unliked this event",
+      !isLiked ? "success" : "info"
+    );
+  } catch (error) {
+    console.error("Error updating like:", error);
+    showNotification("Failed to update like", "error");
+  }
+};
+// ...existing code...
 
   const handleBookmark = () => {
     const newBookmarkStatus = !isBookmarked;
@@ -198,9 +179,16 @@ const EventDetailsPage = () => {
 
   const handleCommentChange = (e) => setComments(e.target.value);
 
+  // ...existing code...
   const handleCommentSubmit = async () => {
+    console.log("Submitting comment", { comments, currentUser });
     if (!comments.trim()) return;
-
+  
+    if (!currentUser || !currentUser.name || !currentUser._id) {
+      showNotification("You must be logged in to comment.", "error");
+      return;
+    }
+  
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/events/${eventId}/comments`, {
@@ -216,9 +204,13 @@ const EventDetailsPage = () => {
           avatar: currentUser.profilePicture || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
         })
       });
-
-      if (!response.ok) throw new Error("Failed to post comment");
-
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to post comment:", errorText);
+        throw new Error("Failed to post comment");
+      }
+  
       const data = await response.json();
       setCommentList(data.comments);
       setComments("");
@@ -239,53 +231,50 @@ const EventDetailsPage = () => {
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+// ...existing code...
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
 
-    let errors = {};
-    if (!volunteerInfo.name.trim()) errors.name = "Name is required";
-    if (!volunteerInfo.sex) errors.sex = "Gender is required";
-    if (!volunteerInfo.skills.trim()) errors.skills = "Skills are required";
-    if (!volunteerInfo.age || isNaN(volunteerInfo.age)) errors.age = "Valid age is required";
-    else if (volunteerInfo.age < 16) errors.age = "Must be at least 16 years old";
+  let errors = {};
+  if (!volunteerInfo.name.trim()) errors.name = "Name is required";
+  if (!volunteerInfo.sex) errors.sex = "Gender is required";
+  if (!volunteerInfo.skills.trim()) errors.skills = "Skills are required";
+  if (!volunteerInfo.age || isNaN(volunteerInfo.age)) errors.age = "Valid age is required";
+  else if (volunteerInfo.age < 16) errors.age = "Must be at least 16 years old";
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+  if (Object.keys(errors).length > 0) {
+    setFormErrors(errors);
+    return;
+  }
 
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...volunteerInfo,
-          userId: currentUser._id
-        })
-      });
+ 
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(volunteerInfo) // <-- Only send volunteerInfo
+    });
 
-      if (!response.ok) throw new Error("Registration failed");
+    if (!response.ok) throw new Error("Registration failed");
 
-      const data = await response.json();
-      setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
-      setShowForm(false);
-      setSubscribed(true);
-      setVolunteerCount(data.volunteerCount);
-      localStorage.setItem(`event_${eventId}_subscribed`, "true");
-      showNotification("Thank you for volunteering!", "success");
-    } catch (error) {
-      console.error("Registration error:", error);
-      showNotification("Registration failed", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    await fetchEventDetails();
+    setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
+    setShowForm(false);
+    setSubscribed(true);
+    localStorage.setItem(`event_${eventId}_subscribed`, "true");
+    showNotification("Thank you for volunteering!", "success");
+  } catch (error) {
+    console.error("Registration error:", error);
+    showNotification("Registration failed", "error");
+  } finally {
+    setLoading(false);
+  }
+};
   const shareEvent = () => {
     if (navigator.share) {
       navigator.share({

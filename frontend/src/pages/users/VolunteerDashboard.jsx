@@ -49,7 +49,6 @@ const VolunteerDashboard = () => {
     impactPoints: 0
   });
   const [isScrolled, setIsScrolled] = useState(false);
-
   // Track scroll position for navbar effect
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +57,10 @@ const VolunteerDashboard = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+// Toggle expand/collapse for a single event (accordion style)
 
+  // Load user data and favorites
+ // ...existing code...
   // Load user data and favorites
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,16 +73,10 @@ const VolunteerDashboard = () => {
         });
         const data = await response.json();
         setUser(data.user);
-        
-        // Fetch actual user stats
-        const statsResponse = await fetch(`http://localhost:5000/api/users/${data.user._id}/stats`);
-        const statsData = await statsResponse.json();
-        setStats({
-          eventsAttended: statsData.eventsAttended || 0,
-          hoursVolunteered: statsData.hoursVolunteered || 0,
-          upcomingEvents: statsData.upcomingEvents || 0,
-          impactPoints: statsData.impactPoints || 0
-        });
+
+        // ❌ Removed stats fetch from /api/users/:id/stats
+        // setStats({ ... }) will fallback below if needed
+
       } catch (error) {
         console.error("Error fetching user data:", error);
         // Fallback to random stats if API fails
@@ -101,41 +97,28 @@ const VolunteerDashboard = () => {
     fetchUserData();
   }, []);
 
-  // Save favorites to localStorage when they change
   useEffect(() => {
     localStorage.setItem("volunteerFavorites", JSON.stringify(favorites));
   }, [favorites]);
-
-  // Fetch events with actual volunteer counts
   useEffect(() => {
     const fetchApprovedEvents = async () => {
       try {
         setLoading(true);
         const response = await fetch("http://localhost:5000/api/events/approved");
+        if (response.status === 429) {
+          // Show a user-friendly error
+          toast.error("You are making requests too quickly. Please wait and try again.");
+          setLoading(false);
+          return;
+        }
         const data = await response.json();
-        
-        // Fetch volunteer counts for each event
-        const eventsWithDetails = await Promise.all(data.map(async (event) => {
-          try {
-            const volunteersResponse = await fetch(`http://localhost:5000/api/events/${event._id}/volunteers`);
-            const volunteersData = await volunteersResponse.json();
-            return {
-              ...event,
-              volunteersRegistered: volunteersData.count || 0,
-              category: categorizeEvent(event.name),
-              isFavorite: favorites.includes(event._id)
-            };
-          } catch (error) {
-            console.error(`Error fetching volunteers for event ${event._id}:`, error);
-            return {
-              ...event,
-              volunteersRegistered: 0,
-              category: categorizeEvent(event.name),
-              isFavorite: favorites.includes(event._id)
-            };
-          }
+        // No need to fetch volunteers count separately!
+        const eventsWithDetails = data.map((event) => ({
+          ...event,
+          category: categorizeEvent(event.name),
+          isFavorite: favorites.includes(event._id)
         }));
-        
+
         setEvents(eventsWithDetails);
       } catch (error) {
         console.error("Error fetching approved events:", error);
@@ -146,6 +129,7 @@ const VolunteerDashboard = () => {
     };
     fetchApprovedEvents();
   }, [favorites]);
+// ...existing code...
 
   const categorizeEvent = (eventName) => {
     const lowerName = eventName.toLowerCase();
@@ -379,12 +363,7 @@ const VolunteerDashboard = () => {
                       >
                         Your Profile
                       </button>
-                      <button 
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => navigate("/settings")}
-                      >
-                        Settings
-                      </button>
+                     
                       <div className="border-t border-gray-200"></div>
                       <button 
                         className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
@@ -573,13 +552,15 @@ const VolunteerDashboard = () => {
             </div>
             
             <div className="flex gap-2 w-full md:w-auto">
-              <Button 
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 bg-white hover:bg-gray-50 px-4 py-3 rounded-lg border border-gray-300 shadow-sm"
-              >
-                <FaFilter className="text-gray-600" /> 
-                {showFilters ? "Hide" : "Show"} Filters
-              </Button>
+            <motion.button
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  onClick={() => setShowFilters(!showFilters)}
+  className="flex items-center gap-2 bg-white hover:bg-gray-50 px-4 py-3 rounded-lg border border-gray-300 shadow-sm"
+>
+  <FaFilter className="text-gray-600" /> 
+  {showFilters ? "Hide" : "Show"} Filters
+</motion.button>
               
               <select
                 className="bg-white border border-gray-300 text-gray-800 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent shadow-sm appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNoZXZyb24tZG93biI+PHBhdGggZD0ibTYgOSA2IDYgNi02Ii8+PC9zdmc+')] bg-no-repeat bg-[center_right_0.5rem] bg-[length:1rem]"
@@ -710,18 +691,18 @@ const VolunteerDashboard = () => {
           </motion.div>
         ) : (
           <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {filteredEvents.map((event) => (
-                <motion.div
-                  key={event._id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.5 }}
-                  whileHover={{ scale: 1.02 }}
-                  className={`bg-white rounded-xl shadow-sm hover:shadow-md overflow-hidden border ${getCategoryBorder(event.category)} transition-all duration-300`}
-                >
+          <AnimatePresence>
+            {filteredEvents.map((event) => (
+              <motion.div
+                key={event._id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5 }}
+                whileHover={{ scale: 1.02 }}
+                className={`bg-white rounded-xl shadow-sm hover:shadow-md overflow-hidden border ${getCategoryBorder(event.category)} transition-all duration-300`}
+              >
                   <Card className="h-full flex flex-col">
                     {/* Event Image with Favorite Button */}
                     <div className="relative overflow-hidden h-56">
@@ -762,108 +743,72 @@ const VolunteerDashboard = () => {
                       </div>
                     </div>
 
-                    {/* Event Content */}
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.6 }}
-                      className="p-6 flex-grow flex flex-col"
-                    >
-                      {/* Event Name */}
-                      <motion.h3
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className={`text-xl font-bold mb-3 cursor-pointer ${getCategoryText(event.category)}`}
-                        onClick={() => handleEventClick(event._id)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.6 }}
+                  className="p-6 flex-grow flex flex-col"
+                >
+                  {/* ...existing event content... */}
+                  <AnimatePresence>
+                    {expandedEvent === event._id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden bg-gray-50 rounded-lg mt-2"
                       >
-                        {event.name}
-                      </motion.h3>
-
-                      {/* Event Description */}
-                      <p className="text-gray-600 mb-4 line-clamp-3">
-                        {event.description || "No description provided."}
-                      </p>
-
-                      {/* Event Date and Location */}
-                      <div className="flex items-center text-sm text-gray-500 space-x-4 mb-4">
-                        <div className="flex items-center">
-                          <FaCalendarAlt className="mr-2" />
-                          <span>
-                            {new Date(event.date).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center">
-                          <FaMapMarkerAlt className="mr-2" />
-                          <span>{event.location || "Online"}</span>
-                        </div>
-                      </div>
-
-                      {/* Expandable Details */}
-                      <AnimatePresence>
-                        {expandedEvent === event._id && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden bg-gray-50 rounded-lg mt-2"
-                          >
-                            <div className="p-4 space-y-3 text-gray-600 text-sm">
-                              <div className="flex items-start">
-                                <FaInfoCircle className="mr-3 mt-1 flex-shrink-0 text-gray-400" />
-                                <div>
-                                  <p className="font-medium text-gray-700">Details:</p>
-                                  <p>{event.longDescription || "No additional details provided."}</p>
-                                </div>
-                              </div>
-                              {event.requirements?.length > 0 && (
-                                <div className="flex items-start">
-                                  <FaHandsHelping className="mr-3 mt-1 flex-shrink-0 text-gray-400" />
-                                  <div>
-                                    <p className="font-medium text-gray-700">Requirements:</p>
-                                    <ul className="list-disc list-inside pl-1">
-                                      {event.requirements.map((req, i) => (
-                                        <li key={i}>{req}</li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                </div>
-                              )}
+                        <div className="p-4 space-y-3 text-gray-600 text-sm">
+                          <div className="flex items-start">
+                            <FaInfoCircle className="mr-3 mt-1 flex-shrink-0 text-gray-400" />
+                            <div>
+                              <p className="font-medium text-gray-700">Details:</p>
+                              <p>{event.longDescription || "No additional details provided."}</p>
                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      {/* Event Details */}
-                      <div className="mt-auto pt-4 border-t border-gray-100">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <FaUsers className="mr-2" />
-                            <span>{event.volunteersRegistered} of {event.volunteersNeeded || '∞'} spots filled</span>
                           </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleEventExpand(event._id);
-                            }}
-                            className="text-teal-600 hover:text-teal-800 flex items-center text-sm font-medium"
-                          >
-                            {expandedEvent === event._id ? (
-                              <>
-                                <span className="mr-1">Less info</span>
-                                <FaChevronUp />
-                              </>
-                            ) : (
-                              <>
-                                <span className="mr-1">More info</span>
-                                <FaChevronDown />
-                              </>
-                            )}
-                          </button>
+                          {event.requirements?.length > 0 && (
+                            <div className="flex items-start">
+                              <FaHandsHelping className="mr-3 mt-1 flex-shrink-0 text-gray-400" />
+                              <div>
+                                <p className="font-medium text-gray-700">Requirements:</p>
+                                <ul className="list-disc list-inside pl-1">
+                                  {event.requirements.map((req, i) => (
+                                    <li key={i}>{req}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div className="mt-auto pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FaUsers className="mr-2" />
+                        <span>{event.volunteersRegistered} of {event.volunteersNeeded || '∞'} spots filled</span>
+                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleEventExpand(event._id);
+                        }}
+                        className="text-teal-600 hover:text-teal-800 flex items-center text-sm font-medium"
+                      >
+                        {expandedEvent === event._id ? (
+                          <>
+                            <span className="mr-1">Less info</span>
+                            <FaChevronUp />
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-1">More info</span>
+                            <FaChevronDown />
+                          </>
+                        )}
+                      </button>
+                    </div>
                       </div>
 
                       {/* Action Buttons */}
@@ -873,30 +818,31 @@ const VolunteerDashboard = () => {
                         transition={{ delay: 0.4 }}
                         className="flex justify-between mt-4"
                       >
-                        <Button 
-                          className="text-gray-600 hover:text-gray-800 flex items-center group"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(event);
-                          }}
-                        >
-                          <FaShareAlt className="mr-2 group-hover:animate-bounce" /> 
-                          <span className="text-sm">Share</span>
-                        </Button>
+                       <motion.button
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="text-gray-600 hover:text-gray-800 flex items-center group"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleShare(event);
+  }}
+>
+  <FaShareAlt className="mr-2 group-hover:animate-bounce" /> 
+  <span className="text-sm">Share</span>
+</motion.button>
 
-                        <Button
-                          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEventClick(event._id);
-                          }}
-                        >
-                          View Event
-                        </Button>
+                        
+<motion.button
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleEventClick(event._id);
+  }}
+>
+  View Event
+</motion.button>
                       </motion.div>
                     </motion.div>
                   </Card>

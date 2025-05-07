@@ -513,12 +513,17 @@ router.put("/approve/:id", async (req, res) => {
 // res.json({ message: "Event approved successfully" });
 router.get("/approved", async (req, res) => {
   try {
-    const events = await Event.find({ status: "approved" }); // Fetch approved events
-    const eventsWithFullImageUrl = events.map((event) => ({
+    // Fetch approved events and include volunteers array
+    const events = await Event.find({ status: "approved" });
+
+    // Map events to include full image URL and volunteers count
+    const eventsWithDetails = events.map((event) => ({
       ...event._doc,
-      image: `http://localhost:5000${event.image}`, // Prepend base URL to image path
+      image: event.image ? `http://localhost:5000${event.image}` : null,
+      volunteersRegistered: event.volunteers ? event.volunteers.length : 0, // Add volunteers count
     }));
-    res.status(200).json(eventsWithFullImageUrl);
+
+    res.status(200).json(eventsWithDetails);
   } catch (error) {
     console.error("Error fetching approved events:", error);
     res.status(500).json({ message: "Server error" });
@@ -738,15 +743,108 @@ router.put('/events/:id', verifyToken, async (req, res) => {
     });
   }
 });
-// // Example backend route (Node.js/Express)
-// router.get('/api/events/:eventId/volunteers', async (req, res) => {
-//   try {
-//     const eventId = req.params.eventId;
-//     const count = await Volunteer.countDocuments({ eventId });
-//     res.json({ count });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// });
+
+
+router.post("/:eventId/register", verifyToken, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Ensure volunteers is always an array
+    if (!Array.isArray(event.volunteers)) {
+      event.volunteers = [];
+    }
+
+    const userId = req.user.id;
+    if (event.volunteers.includes(userId)) {
+      return res.status(400).json({ message: "Already registered" });
+    }
+    event.volunteers.push(userId);
+    await event.save();
+    res.json({ 
+      volunteerCount: event.volunteers.length,
+      volunteers: event.volunteers
+    });  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Registration failed" });
+  }
+});
+
+// Like or Unlike an event
+router.post("/:eventId/like", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { userId, like } = req.body; // like: true to like, false to unlike
+
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    const alreadyLiked = event.likes.includes(userId);
+
+    if (like && !alreadyLiked) {
+      event.likes.push(userId);
+    } else if (!like && alreadyLiked) {
+      event.likes = event.likes.filter(id => id.toString() !== userId);
+    }
+
+    await event.save();
+    res.json({ likes: event.likes });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update like" });
+  }
+});
+
+// Get likes for an event
+router.get("/:eventId/likes", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    res.json({ likes: event.likes });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch likes" });
+  }
+});
+// Add a comment to an event
+router.post("/:eventId/comments", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { text, author, authorId, avatar } = req.body;
+
+    if (!text || !author || !authorId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    // Add comment to event
+    const comment = {
+      userId: authorId,
+      text,
+      author,
+      avatar,
+      createdAt: new Date()
+    };
+    if (!event.comments) event.comments = [];
+    event.comments.push(comment);
+    await event.save();
+
+    res.json({ comments: event.comments });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
+
+// Get comments for an event
+router.get("/:eventId/comments", async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
+    res.json({ comments: event.comments || [] });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
 module.exports = router;

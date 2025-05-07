@@ -135,23 +135,25 @@ router.get("/profile", verifyToken, async (req, res) => {
 
     // Determine user role and fetch user details
     if (req.user.role === "volunteer") {
-      user = await Volunteer.findById(req.user.id).select("-password"); // Exclude password from response
+      user = await Volunteer.findById(req.user.id).select("-password");
     } else if (req.user.role === "ngo") {
-      user = await NGO.findById(req.user.id).select("-password"); // Exclude password from response
+      user = await NGO.findById(req.user.id).select("-password");
     } else if (req.user.role === "admin") {
-      user = await Admin.findById(req.user.id).select("-password"); // Exclude password from response
+      user = await Admin.findById(req.user.id).select("-password");
     }
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json(user); // Return user details
+    res.status(200).json({ user }); // <-- wrap user in an object
   } catch (error) {
     console.error("Error fetching profile:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
-});router.post("/register/ngo", async (req, res) => {
+});
+
+router.post("/register/ngo", async (req, res) => {
   const { name, email, password, organization } = req.body;
 
   try {

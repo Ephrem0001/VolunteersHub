@@ -37,6 +37,8 @@ import ResetPassword from "./pages/users/ResetPassword.jsx";
 import EditEvent from "./pages/ngo/EditEvent.jsx";
 import Teams from "./pages/ngo/Teams.jsx";
 import ContactMessages from "./pages/admin/ContactMessages.jsx";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminManagement from "./pages/admin/AdminManagement.jsx";
 // import ManageEvents from "./pages/ngo/ManageEvents.jsx";
 const App = () => {
   return (
@@ -68,6 +70,8 @@ const App = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin-login" element={<AdminLogin/>} />
+        <Route path="/admin-management" element={<AdminManagement />} />
 
         {/* Register Routes */}
         <Route path="/register-admin" element={<AdminRegister />} />
@@ -89,6 +93,7 @@ const App = () => {
         <Route path="/admindashboard" element={<AdminDashboard />} />
          <Route path="/admin-dashboard/approve-events" element={<AdminRoute role="admin"><ApproveEvents/></AdminRoute> }/>
          <Route path="/admin-dashboard/contact-messages" element={<AdminRoute role="admin"><ContactMessages/></AdminRoute> }/>
+         {/* <Route path="/admin-dashboard/admin-service" element={<AdminRoute role="admin"><AdminService/></AdminRoute> }/> */}
 
         <Route path="/admin-dashboard/manage-ngo" element={ <AdminRoute role="admin"><ManageNGO /></AdminRoute> }/>
         <Route path="/admin-dashboard/ManageVolunteer" element={ <AdminRoute role="admin"><ManageVolunteer/></AdminRoute> }/>

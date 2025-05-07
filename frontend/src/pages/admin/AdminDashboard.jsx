@@ -81,7 +81,10 @@ const AdminDashboard = () => {
       autoApproveThreshold: e.target.value
     }));
   };
-
+  const navigate = useNavigate();
+  const handleAdminClick = () => {
+    navigate('/admin-login');
+  };
   const runSystemBackup = () => {
     setTimeout(() => {
       setSystemStatus(prev => ({
@@ -494,15 +497,16 @@ const AdminDashboard = () => {
 
         {/* User & Logout */}
         <div className="mt-auto pt-4 border-t border-gray-700">
-          <div className="flex items-center mb-4 p-3 rounded-lg bg-gray-700/50">
-            <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
-              <span className="font-bold">A</span>
-            </div>
-            <div>
-              <p className="font-medium">Admin User</p>
-              <p className="text-xs text-gray-400">Super Admin</p>
-            </div>
-          </div>
+        <div className="flex items-center mb-4 p-3 rounded-lg bg-gray-700/50 hover:bg-gray-700/80 cursor-pointer transition-colors" 
+     onClick={handleAdminClick}>
+  <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
+    <span className="font-bold">A</span>
+  </div>
+  <div>
+    <p className="font-medium">Admin User</p>
+    <p className="text-xs text-gray-400">Super Admin</p>
+  </div>
+</div>
           
           <motion.button
             whileHover={{ scale: 1.02 }}

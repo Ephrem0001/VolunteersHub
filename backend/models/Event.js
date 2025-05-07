@@ -10,6 +10,7 @@ const EventSchema = new mongoose.Schema({
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   comments: [{ userId: mongoose.Schema.Types.ObjectId, text: String }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "NGO", required: true },
+  volunteers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Applier", default: [] }], 
 });
 
 module.exports = mongoose.model("Event", EventSchema);

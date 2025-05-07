@@ -66,11 +66,29 @@ app.use(mongoSanitize());
 app.use(hpp());
 app.use(cookieParser());
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 300, // 300 requests per 5 minutes per IP
   message: "Too many requests from this IP, please try again later"
 }));
+// Add this near your imports
 
+const loginLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100, // allow 100 login attempts per 10 minutes per IP
+  message: "Too many login attempts. Please try again later."
+});
+
+app.use('/api/auth/login', loginLimiter);
+
+const generalLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 300,
+  message: "Too many requests from this IP, please try again later"
+});
+app.use(generalLimiter);
+
+// Apply only to login route
+app.use('/api/auth/login', loginLimiter);
 // Body Parsers
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));

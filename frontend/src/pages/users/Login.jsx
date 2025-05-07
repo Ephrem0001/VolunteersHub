@@ -44,9 +44,10 @@ const Login = () => {
         }),
       });
   
-      // Handle non-JSON responses
-      if (response.status === 404) {
-        throw new Error("Login endpoint not found (404)");
+      if (response.status === 429) {
+        setError("Too many login attempts. Please wait and try again.");
+        setIsLoading(false);
+        return;
       }
   
       const data = await response.json();

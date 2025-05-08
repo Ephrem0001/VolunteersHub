@@ -80,8 +80,6 @@ const ApprovedEvents = () => {
             <thead className="bg-gray-100 text-left text-sm text-gray-600">
               <tr>
                 <th className="px-4 py-3 border-b font-medium">Event Name</th>
-                <th className="px-4 py-3 border-b font-medium">Description</th>
-                <th className="px-4 py-3 border-b font-medium">Organization</th>
                 <th className="px-4 py-3 border-b font-medium">Status</th>
                 <th className="px-4 py-3 border-b font-medium">Action</th>
               </tr>
@@ -90,8 +88,6 @@ const ApprovedEvents = () => {
               {events.map((event) => (
                 <tr key={event._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b">{event.name}</td>
-                  <td className="px-4 py-3 border-b">{event.description}</td>
-                  <td className="px-4 py-3 border-b">{event.organization}</td>
                   <td className="px-4 py-3 border-b text-green-600">{event.status}</td>
                   <td className="px-4 py-3 border-b flex gap-2">
                     <button

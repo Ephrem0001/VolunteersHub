@@ -787,7 +787,8 @@ const VolunteerDashboard = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-sm text-gray-500">
                         <FaUsers className="mr-2" />
-                        <span>{event.volunteersRegistered} of {event.volunteersNeeded || '∞'} spots filled</span>
+                        {/* <span>{event.volunteersRegistered} of {event.volunteersNeeded || '∞'} spots filled</span> */}
+                        <span>{event.name}</span>
                       </div>
                       <button 
                         onClick={(e) => {

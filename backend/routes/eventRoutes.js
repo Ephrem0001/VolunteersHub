@@ -743,33 +743,37 @@ router.put('/events/:id', verifyToken, async (req, res) => {
     });
   }
 });
-
-
 router.post("/:eventId/register", verifyToken, async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Ensure volunteers is always an array
-    if (!Array.isArray(event.volunteers)) {
-      event.volunteers = [];
-    }
-
-    const userId = req.user.id;
-    if (event.volunteers.includes(userId)) {
+    // Prevent duplicate applications by the same user for the same event
+    const existing = await Applier.findOne({
+      eventId: event._id,
+      name: req.body.name, // or use req.user.id if you want to restrict by user
+    });
+    if (existing) {
       return res.status(400).json({ message: "Already registered" });
     }
-    event.volunteers.push(userId);
-    await event.save();
-    res.json({ 
-      volunteerCount: event.volunteers.length,
-      volunteers: event.volunteers
-    });  } catch (error) {
+
+    // Save volunteer form info in Applier collection
+    const applier = new Applier({
+      name: req.body.name,
+      sex: req.body.sex,
+      skills: req.body.skills,
+      age: req.body.age,
+      eventId: event._id,
+      eventCreatorId: event.createdBy,
+    });
+    await applier.save();
+
+    res.json({ message: "Registered successfully" });
+  } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Registration failed" });
   }
 });
-
 // Like or Unlike an event
 router.post("/:eventId/like", async (req, res) => {
   try {
@@ -847,4 +851,17 @@ router.get("/:eventId/comments", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch comments" });
   }
 });
+
+router.get("/:eventId/is-registered", verifyToken, async (req, res) => {
+  try {
+    const eventId = req.params.eventId;
+    // Use req.user.name or req.user.id depending on your Applier schema
+    const applier = await Applier.findOne({ eventId, name: req.user.name });
+    res.json({ registered: !!applier });
+  } catch (error) {
+    res.status(500).json({ registered: false });
+  }
+});
+
+
 module.exports = router;

@@ -127,7 +127,25 @@ const EventDetailsPage = () => {
   
     fetchUserData();
   }, []);
-
+  useEffect(() => {
+    const checkRegistration = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || !currentUser) {
+          setSubscribed(false);
+          return;
+        }
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/is-registered`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setSubscribed(data.registered);
+      } catch (err) {
+        setSubscribed(false);
+      }
+    };
+    if (currentUser && eventId) checkRegistration();
+  }, [currentUser, eventId]);
   const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -340,8 +358,7 @@ const EventDetailsPage = () => {
       setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
       setShowForm(false);
       setSubscribed(true);
-      localStorage.setItem(`event_${eventId}_subscribed`, "true");
-      showNotification("Thank you for volunteering!", "success");
+showNotification("Thank you for volunteering!", "success");
     } catch (error) {
       console.error("Registration error:", error);
       showNotification("Registration failed", "error");

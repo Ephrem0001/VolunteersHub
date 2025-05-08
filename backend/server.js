@@ -22,7 +22,7 @@ const userRoutes = require("./routes/usersRoute");
 const uprofileRoutes = require("./routes/uprofileRoutes");
 const edit = require("./routes/edit")
 const contactRoutes = require('./routes/contact');
-
+const applierRoutes = require("./routes/applierRoutes");
 // Middleware configuration
 // Replace your current CORS configuration with this:
 const corsOptions = {
@@ -111,6 +111,7 @@ app.use("/api", userRoutes);
 app.use("/api/volunteer", uprofileRoutes);
 app.use("/api/edit",edit)
 app.use('/api/contact', contactRoutes);
+app.use("/api/appliers", applierRoutes);
 // Health endpoints
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });

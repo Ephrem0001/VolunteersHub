@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   FaSearch,
   FaUser,
   FaArrowLeft,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaTag
 } from "react-icons/fa";
 
 const TrackVolunteers = () => {
@@ -17,58 +14,85 @@ const TrackVolunteers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const { user } = useAuth();
-
   useEffect(() => {
-    if (!user?.id) return;
-
+    console.log("Current user:", user);
+    const userId = user?.id || user?._id;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+  
+    const controller = new AbortController();
+    let didCancel = false;
+  
     const fetchVolunteersForEvents = async () => {
-            setLoading(true);
-      try { 
-        // 1. Fetch all events created by the current user (organizer)
-        const eventsRes = await fetch(`http://localhost:5000/api/events?creatorId=${user.id}`);
-        const eventsData = await eventsRes.json();
-        const events = eventsData.data || [];
-
-        // 2. For each event, fetch volunteer details
-        let rows = [];
-        for (const event of events) {
-          if (event.volunteers && event.volunteers.length > 0) {
-            for (const volunteerId of event.volunteers) {
-              // Fetch volunteer details
-              const volunteerRes = await fetch(`http://localhost:5000/api/users/${volunteerId}`);
-              if (!volunteerRes.ok) continue;
-              const volunteerData = await volunteerRes.json();
-              const volunteer = volunteerData.user || volunteerData;
-
-              rows.push({
-                volunteerName: volunteer.name,
-                volunteerEmail: volunteer.email,
-                volunteerPhone: volunteer.phone,
-                eventName: event.name,
-                eventType: event.category || event.type || "N/A",
-                eventLocation: event.location,
-                eventDate: new Date(event.date).toLocaleDateString(),
-              });
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/appliers?eventCreatorId=${userId}`,
+          { signal: controller.signal }
+        );
+        if (!res.ok) throw new Error("Failed to fetch volunteers");
+        const data = await res.json();
+        const appliers = data.appliers || [];
+        console.log("Fetched appliers:", appliers);
+    
+        const rows = await Promise.all(appliers.map(async (applier) => {
+          let eventName = "N/A";
+          let eventType = "N/A";
+          let eventDate = "N/A";
+          let eventLocation = "N/A";
+          if (applier.eventId) {
+            try {
+              const eventRes = await fetch(`http://localhost:5000/api/events/${applier.eventId}`);
+              if (eventRes.ok) {
+                const eventData = await eventRes.json();
+                eventName = eventData.name || eventData.title || "N/A";
+                eventType = eventData.category || eventData.type || "N/A";
+                eventDate = eventData.date ? new Date(eventData.date).toLocaleDateString() : "N/A";
+                eventLocation = eventData.location || "N/A";
+              }
+            } catch (err) {
+              // Use defaults if fetch fails
             }
           }
-        }
-        setVolunteerRows(rows);
+          return {
+            volunteerName: applier.name,
+            volunteerSex: applier.sex,
+            volunteerAge: applier.age,
+            volunteerSkills: applier.skills,
+            eventName,
+            eventType,
+            eventDate,
+            eventLocation,
+          };
+        }));
+        const validRows = rows.filter(Boolean);
+        if (!didCancel) setVolunteerRows(validRows);
       } catch (err) {
-        setVolunteerRows([]);
+        if (!didCancel) {
+          console.error("Error fetching volunteers:", err);
+          setVolunteerRows([]);
+        }
       } finally {
-        setLoading(false);
+        if (!didCancel) setLoading(false);
       }
     };
-
+  
     fetchVolunteersForEvents();
+  
+    return () => {
+      didCancel = true;
+      controller.abort();
+    };
   }, [user]);
 
-  // Filter by search term
-  const filteredRows = volunteerRows.filter(row =>
-    row.volunteerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    row.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    row.eventType?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRows = volunteerRows
+  .filter(row => row && (
+    (row.volunteerName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (row.eventName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (row.eventType || "").toLowerCase().includes(searchTerm.toLowerCase())
+  ));
 
   if (!user) {
     return (
@@ -131,51 +155,35 @@ const TrackVolunteers = () => {
           {loading ? (
             <div className="p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-              <p className="text-gray-600">Loading volunteer data...</p>
             </div>
           ) : filteredRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volunteer</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Skills</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event</th>
+                    {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th> */}
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <AnimatePresence>
-                    {filteredRows.map((row, idx) => (
-                      <motion.tr
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="hover:bg-gray-50"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                          <FaUser className="text-purple-600" /> {row.volunteerName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{row.volunteerEmail}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{row.volunteerPhone || "N/A"}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{row.eventName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                          <FaTag className="text-gray-400" /> {row.eventType}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                          <FaCalendarAlt className="text-gray-400" /> {row.eventDate}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                          <FaMapMarkerAlt className="text-gray-400" /> {row.eventLocation}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {filteredRows.map((row, idx) => (
+                    <tr key={idx}>
+                      <td className="px-4 py-2">{row.volunteerName}</td>
+                      <td className="px-4 py-2">{row.volunteerSex}</td>
+                      <td className="px-4 py-2">{row.volunteerAge}</td>
+                      <td className="px-4 py-2">{row.volunteerSkills}</td>
+                      <td className="px-4 py-2">{row.eventName}</td>
+                      {/* <td className="px-4 py-2">{row.eventType}</td> */}
+                      <td className="px-4 py-2">{row.eventDate}</td>
+                      <td className="px-4 py-2">{row.eventLocation}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

@@ -28,7 +28,7 @@ const ApproveEvents = () => {
       setLoading(false);
     }
   };
-  const updateEventStatus = async (id, status) => {
+  const updateEventStatus = async (id, status, ngoEmail) => {
     try {
       const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
@@ -37,6 +37,7 @@ const ApproveEvents = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({}),// <-- send NGO email
       });
   
       if (response.status === 401) {
@@ -96,14 +97,13 @@ const ApproveEvents = () => {
                     <div className="flex gap-2">
                       <button
                         className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-all"
-                        onClick={() => updateEventStatus(event._id, "approve")}
-                      >
+                        onClick={() => updateEventStatus(event._id, "approve", event.ngoEmail)}                      >
                         Approve
                       </button>
                       <button
                         className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-all"
-                        onClick={() => updateEventStatus(event._id, "reject")}
-                      >
+                        onClick={() => updateEventStatus(event._id, "reject", event.ngoEmail)}
+                        >
                         Reject
                       </button>
                     </div>

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// Remove FaClock from here:
+// Remove the unused FaEnvelope import from your imports:
 import {
   FaThumbsUp,
   FaComment,
@@ -8,7 +10,7 @@ import {
   FaMapMarkerAlt,
   FaCalendarAlt,
   FaInfoCircle,
-  FaClock,
+  // Remove FaClock completely (don't just comment it out)
   FaUsers,
   FaArrowLeft,
   FaShare,
@@ -18,17 +20,23 @@ import {
   FaRegStar,
   FaMagic,
   FaHeart,
-  FaRegHeart
+  FaRegHeart,
+  FaEllipsisH,
+  FaRegClock
 } from "react-icons/fa";
-import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa';
+import { useCallback } from "react";
+import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from 'react-hot-toast';
+import CountUp from 'react-countup';
+import { Carousel } from 'react-responsive-carousel';
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 const EventDetailsPage = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
-  const [likes, setLikes] = useState([]); // Array of user IDs who liked
+  const [likes, setLikes] = useState([]);
   const [isLiked, setIsLiked] = useState(false);
   const [comments, setComments] = useState("");
   const [commentList, setCommentList] = useState([]);
@@ -49,6 +57,15 @@ const EventDetailsPage = () => {
   const [activeTab, setActiveTab] = useState("details");
   const [volunteerCount, setVolunteerCount] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [remainingTime, setRemainingTime] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const commentInputRef = useRef(null);
 
   const CITY_COORDINATES = {
     "addis ababa": { lat: 9.0054, lng: 38.7636 },
@@ -80,13 +97,20 @@ const EventDetailsPage = () => {
     ]
   };
 
+  // Sample gallery images (would be replaced with actual event images in a real app)
+  const sampleGalleryImages = [
+    "https://images.unsplash.com/photo-1541178735493-479c1a27ed24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+  ];
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          // TEMP: Set a dummy user for testing
-          setCurrentUser({ _id: "123", name: "Test User" });
+          setCurrentUser({ _id: "123", name: "Guest User" });
           return;
         }
         const response = await fetch("http://localhost:5000/api/auth/profile", {
@@ -104,61 +128,100 @@ const EventDetailsPage = () => {
     fetchUserData();
   }, []);
 
-  const fetchEventDetails = async () => {
+  const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
       if (!response.ok) throw new Error("Failed to fetch event details");
       const data = await response.json();
       setEvent(data);
+      setLikes(data.likes || []);
+      setIsLiked(data.likes?.includes(currentUser?._id) || false);
+      setCommentList(data.comments || []);
       setVolunteerCount(Array.isArray(data.volunteers) ? data.volunteers.length : 0);
+      setSubscribed(localStorage.getItem(`event_${eventId}_subscribed`) === "true");
+      setIsBookmarked(localStorage.getItem(`event_${eventId}_bookmarked`) === "true");
+      setRating(parseInt(localStorage.getItem(`event_${eventId}_rating`) || "0"));
+      
+      // Calculate remaining time until event
+      if (data.date) {
+        calculateRemainingTime(new Date(data.date));
+      }
     } catch (error) {
       console.error("Error fetching event details:", error);
     } finally {
       setLoading(false);
     }
-  };
+  },[eventId, currentUser]);
 
   useEffect(() => {
     fetchEventDetails();
-  }, [eventId]); // Add `registered` or similar state that changes after registration  // ...existing code...
-const handleLike = async () => {
-  if (!currentUser || !currentUser._id) {
-    showNotification("You must be logged in to like events.", "error");
-    return;
-  }
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/events/${eventId}/like`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId: currentUser._id,
-        like: !isLiked
-      })
-    });
+  }, [eventId, currentUser, fetchEventDetails]);
 
-    if (!response.ok) throw new Error("Failed to update like");
+  useEffect(() => {
+    // Set up interval for countdown timer
+    const timer = setInterval(() => {
+      if (event?.date) {
+        calculateRemainingTime(new Date(event.date));
+      }
+    }, 1000);
 
-    const data = await response.json();
-    setLikes(data.likes);
-    setIsLiked(!isLiked);
+    return () => clearInterval(timer);
+  }, [event]);
 
-    showNotification(
-      !isLiked 
-        ? "You liked this event!" 
-        : "You unliked this event",
-      !isLiked ? "success" : "info"
-    );
-  } catch (error) {
-    console.error("Error updating like:", error);
-    showNotification("Failed to update like", "error");
-  }
-};
-// ...existing code...
+  const calculateRemainingTime = (eventDate) => {
+    const now = new Date();
+    const diff = eventDate - now;
+
+    if (diff <= 0) {
+      setRemainingTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    setRemainingTime({ days, hours, minutes, seconds });
+  };
+
+  const handleLike = async () => {
+    if (!currentUser || !currentUser._id) {
+      showNotification("You must be logged in to like events.", "error");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: currentUser._id,
+          like: !isLiked
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to update like");
+
+      const data = await response.json();
+      setLikes(data.likes);
+      setIsLiked(!isLiked);
+
+      showNotification(
+        !isLiked 
+          ? "You liked this event!" 
+          : "You unliked this event",
+        !isLiked ? "success" : "info"
+      );
+    } catch (error) {
+      console.error("Error updating like:", error);
+      showNotification("Failed to update like", "error");
+    }
+  };
 
   const handleBookmark = () => {
     const newBookmarkStatus = !isBookmarked;
@@ -177,11 +240,13 @@ const handleLike = async () => {
     showNotification(`You rated this event ${newRating} star${newRating > 1 ? 's' : ''}!`, "success");
   };
 
-  const handleCommentChange = (e) => setComments(e.target.value);
+  const handleCommentChange = (e) => {
+    if (e.target.value.length <= 500) {
+      setComments(e.target.value);
+    }
+  };
 
-  // ...existing code...
   const handleCommentSubmit = async () => {
-    console.log("Submitting comment", { comments, currentUser });
     if (!comments.trim()) return;
   
     if (!currentUser || !currentUser.name || !currentUser._id) {
@@ -215,13 +280,24 @@ const handleLike = async () => {
       setCommentList(data.comments);
       setComments("");
       showNotification("Comment added!", "success");
+      
+      // Focus back on the comment input after submission
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+      }
     } catch (error) {
       console.error("Error posting comment:", error);
       showNotification("Failed to post comment", "error");
     }
   };
 
-  const handleJoin = () => setShowForm(true);
+  const handleJoin = () => {
+    if (!currentUser) {
+      showNotification("Please log in to join this event", "error");
+      return;
+    }
+    setShowForm(true);
+  };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -231,50 +307,49 @@ const handleLike = async () => {
     }
   };
 
-// ...existing code...
-const handleFormSubmit = async (e) => {
-  e.preventDefault();
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
 
-  let errors = {};
-  if (!volunteerInfo.name.trim()) errors.name = "Name is required";
-  if (!volunteerInfo.sex) errors.sex = "Gender is required";
-  if (!volunteerInfo.skills.trim()) errors.skills = "Skills are required";
-  if (!volunteerInfo.age || isNaN(volunteerInfo.age)) errors.age = "Valid age is required";
-  else if (volunteerInfo.age < 16) errors.age = "Must be at least 16 years old";
+    let errors = {};
+    if (!volunteerInfo.name.trim()) errors.name = "Name is required";
+    if (!volunteerInfo.sex) errors.sex = "Gender is required";
+    if (!volunteerInfo.skills.trim()) errors.skills = "Skills are required";
+    if (!volunteerInfo.age || isNaN(volunteerInfo.age)) errors.age = "Valid age is required";
+    else if (volunteerInfo.age < 16) errors.age = "Must be at least 16 years old";
 
-  if (Object.keys(errors).length > 0) {
-    setFormErrors(errors);
-    return;
-  }
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
- 
-  try {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(volunteerInfo) // <-- Only send volunteerInfo
-    });
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(volunteerInfo)
+      });
 
-    if (!response.ok) throw new Error("Registration failed");
+      if (!response.ok) throw new Error("Registration failed");
 
-    await fetchEventDetails();
-    setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
-    setShowForm(false);
-    setSubscribed(true);
-    localStorage.setItem(`event_${eventId}_subscribed`, "true");
-    showNotification("Thank you for volunteering!", "success");
-  } catch (error) {
-    console.error("Registration error:", error);
-    showNotification("Registration failed", "error");
-  } finally {
-    setLoading(false);
-  }
-};
+      await fetchEventDetails();
+      setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
+      setShowForm(false);
+      setSubscribed(true);
+      localStorage.setItem(`event_${eventId}_subscribed`, "true");
+      showNotification("Thank you for volunteering!", "success");
+    } catch (error) {
+      console.error("Registration error:", error);
+      showNotification("Registration failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const shareEvent = () => {
     if (navigator.share) {
       navigator.share({
@@ -303,6 +378,24 @@ const handleFormSubmit = async (e) => {
     };
 
     toast(message, toastOptions);
+  };
+
+  const formatDate = (dateString) => {
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Africa/Nairobi', // East Africa Time
+      hour12: true
+    };
+    return new Date(dateString).toLocaleString('en-US', options) + ' (EAT)';
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
 
   if (loading && !event) {
@@ -338,8 +431,12 @@ const handleFormSubmit = async (e) => {
             <img 
               src={event.image} 
               alt={event.title} 
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={handleImageLoad}
             />
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+            )}
             <div className="absolute top-4 right-4 flex space-x-2">
               <motion.button
                 whileHover={{ scale: 1.1 }}
@@ -401,12 +498,7 @@ const handleFormSubmit = async (e) => {
               <FaCalendarAlt className="mr-2 text-blue-500 text-lg" />
               <div>
                 <p className="text-xs text-gray-500">Date</p>
-                <p className="font-medium">{new Date(event.date).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}</p>
+                <p className="font-medium">{formatDate(event.date)}</p>
               </div>
             </div>
 
@@ -417,21 +509,63 @@ const handleFormSubmit = async (e) => {
                 <p className="font-medium">{event.location}</p>
               </div>
             </div>
+            
             <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
               <FaUsers className="mr-2 text-blue-500 text-lg" />
               <div>
                 <p className="text-xs text-gray-500">Volunteers</p>
-                <p className="font-medium">{volunteerCount} joined</p>
+                <p className="font-medium">
+                  <CountUp end={volunteerCount} duration={1} />
+                </p>
               </div>
             </div>
+            
             <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
               <FaHeart className="mr-2 text-blue-500 text-lg" />
               <div>
                 <p className="text-xs text-gray-500">Likes</p>
-                <p className="font-medium">{likes.length}</p>
+                <p className="font-medium">
+                  <CountUp end={likes.length} duration={1} />
+                </p>
               </div>
             </div>
           </div>
+
+          {/* Countdown Timer */}
+          {remainingTime.days >= 0 && (
+  <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 rounded-lg mb-6">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center">
+        <FaRegClock className="mr-2 text-xl" />
+        <span className="font-medium">Event starts in:</span>
+      </div>
+      <div className="flex flex-col items-end">
+        <div className="flex space-x-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold">{remainingTime.days}</div>
+            <div className="text-xs">Days</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">{remainingTime.hours}</div>
+            <div className="text-xs">Hours</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">{remainingTime.minutes}</div>
+            <div className="text-xs">Minutes</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold">{remainingTime.seconds}</div>
+            <div className="text-xs">Seconds</div>
+          </div>
+        </div>
+        <div className="mt-2 text-xs text-white/80">
+          {formatDate(event.date)}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+          
         </div>
       </motion.div>
 
@@ -471,6 +605,12 @@ const handleFormSubmit = async (e) => {
                   className="p-3 bg-blue-700 text-white rounded-full hover:bg-blue-800"
                 >
                   <FaLinkedin className="text-xl" />
+                </motion.button>
+                <motion.button 
+                  whileHover={{ y: -2 }}
+                  className="p-3 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-200"
+                >
+                  <FaInstagram className="text-xl" />
                 </motion.button>
               </div>
               <div className="flex">
@@ -518,6 +658,13 @@ const handleFormSubmit = async (e) => {
           >
             Comments ({commentList.length})
           </motion.button>
+          <motion.button
+            whileHover={{ y: -2 }}
+            onClick={() => setActiveTab("gallery")}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === "gallery" ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          >
+            Gallery
+          </motion.button>
         </nav>
       </div>
 
@@ -535,9 +682,19 @@ const handleFormSubmit = async (e) => {
                 <FaInfoCircle className="mr-2 text-teal-500" />
                 About This Event
               </h3>
-              <p className="text-gray-600 mb-4">
-                {event.longDescription || defaultEventContent.about}
-              </p>
+              <div className="relative">
+                <p className={`text-gray-600 mb-4 ${!showFullDescription && 'line-clamp-4'}`}>
+                  {event.longDescription || defaultEventContent.about}
+                </p>
+                {event.longDescription && event.longDescription.length > 200 && (
+                  <button 
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                    className="text-teal-600 hover:text-teal-800 text-sm font-medium"
+                  >
+                    {showFullDescription ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </div>
               
               <div className="space-y-4">
                 <div>
@@ -587,7 +744,10 @@ const handleFormSubmit = async (e) => {
                     ) : (
                       <FaRegHeart className="mr-2" />
                     )}
-                    <span>{likes.length} Likes</span>
+                    <span>
+                      <CountUp end={likes.length} duration={0.5} />
+                      {likes.length === 1 ? ' Like' : ' Likes'}
+                    </span>
                   </motion.button>
 
                   {!subscribed ? (
@@ -712,11 +872,13 @@ const handleFormSubmit = async (e) => {
               
               <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
                 <textarea
+                  ref={commentInputRef}
                   value={comments}
                   onChange={handleCommentChange}
                   placeholder="Share your thoughts about this event..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-3"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus                   focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-3"
                   rows="3"
+                  maxLength={500}
                 />
                 <div className="flex justify-between items-center">
                   <div className="text-sm text-gray-500">
@@ -741,11 +903,12 @@ const handleFormSubmit = async (e) => {
                     <p>No comments yet. Be the first to comment!</p>
                   </div>
                 ) : (
-                  commentList.map(comment => (
+                  commentList.map((comment, index) => (
                     <motion.div
-                      key={comment.id}
+                      key={index}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
                       className="bg-gray-50 p-4 rounded-lg border border-gray-100"
                     >
                       <div className="flex items-start">
@@ -763,9 +926,7 @@ const handleFormSubmit = async (e) => {
                               </p>
                             </div>
                             <button className="text-gray-400 hover:text-gray-600">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                              </svg>
+                              <FaEllipsisH className="h-4 w-4" />
                             </button>
                           </div>
                           <p className="text-gray-600 mt-2">{comment.text}</p>
@@ -782,6 +943,60 @@ const handleFormSubmit = async (e) => {
                     </motion.div>
                   ))
                 )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === "gallery" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+          >
+            <h3 className="text-xl font-semibold mb-6 text-gray-800 flex items-center">
+              <FaMagic className="mr-2 text-teal-500" />
+              Event Gallery
+            </h3>
+            
+            <div className="relative">
+              <Carousel
+                showArrows={true}
+                showThumbs={false}
+                infiniteLoop={true}
+                autoPlay={true}
+                interval={5000}
+                stopOnHover={true}
+                showStatus={false}
+                dynamicHeight={false}
+                className="rounded-lg overflow-hidden"
+              >
+                {sampleGalleryImages.map((image, index) => (
+                  <div key={index} className="h-96">
+                    <img 
+                      src={image} 
+                      alt={`Event gallery ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </Carousel>
+              
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                {sampleGalleryImages.slice(0, 4).map((image, index) => (
+                  <motion.div
+                    key={index}
+                    whileHover={{ scale: 1.02 }}
+                    className="h-32 cursor-pointer"
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Event thumbnail ${index + 1}`} 
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                  </motion.div>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -885,7 +1100,15 @@ const handleFormSubmit = async (e) => {
                       disabled={loading}
                       className={`px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                      {loading ? 'Submitting...' : 'Submit'}
+                      {loading ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Submitting...
+                        </span>
+                      ) : 'Submit'}
                     </motion.button>
                   </div>
                 </form>
@@ -894,6 +1117,42 @@ const handleFormSubmit = async (e) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Action Button */}
+      <motion.div 
+        className="fixed bottom-6 right-6 z-40"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.5 }}
+      >
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleJoin}
+          className="p-4 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center"
+        >
+          {subscribed ? (
+            <FaCheckCircle className="text-2xl" />
+          ) : (
+            <FaUserPlus className="text-2xl" />
+          )}
+        </motion.button>
+      </motion.div>
+
+      {/* Scroll to Top Button */}
+      <motion.button
+        className="fixed bottom-6 left-6 z-40 p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+        </svg>
+      </motion.button>
     </div>
   );
 };

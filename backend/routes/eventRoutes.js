@@ -286,7 +286,7 @@ router.post("/", async (req, res) => {
       details: error.message 
     });
   }
-});// GET endpoint to fetch volunteers for an organizer
+});
 router.get("/", async (req, res) => {
   const { creatorId, eventId, sortBy, search } = req.query;
 
@@ -481,31 +481,31 @@ const sendRejectionEmail = async (event) => {
 
 router.put("/approve/:id", async (req, res) => {
   try {
-      const event = await Event.findById(req.params.id);
-      if (!event) {
-          console.error("❌ Event not found!");
-          return res.status(404).json({ error: "Event not found" });
-      }
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      console.error("❌ Event not found!");
+      return res.status(404).json({ error: "Event not found" });
+    }
 
-      event.status = "approved"; // Update status
-      await event.save();
+    event.status = "approved"; // Update status
+    await event.save();
 
-      console.log("✅ Event approved:", event);
+    console.log("✅ Event approved:", event);
 
-      // Fetch NGO email
-      const ngo = await NGO.findById(event.createdBy);
-      if (!ngo || !ngo.email) {
-          console.error("❌ NGO email not found!");
-          return res.status(400).json({ error: "NGO email is missing" });
-      }
+    // Fetch NGO email
+    const ngo = await NGO.findById(event.createdBy);
+    if (!ngo || !ngo.email) {
+      console.error("❌ NGO email not found!");
+      return res.status(400).json({ error: "NGO email not found" });
+    }
 
-      console.log("📧 Sending email to:", ngo.email);
+    console.log("📧 Sending email to:", ngo.email);
 
-      await sendApprovalEmail(ngo.email, event.name);
-      res.json({ message: "Event approved successfully Approval email is sent to NGO" });
+    await sendApprovalEmail(ngo.email, event.name);
+    res.json({ message: "Event approved successfully. Approval email sent to NGO." });
   } catch (error) {
-      console.error("❌ Error approving event:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ Error approving event:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

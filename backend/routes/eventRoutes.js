@@ -529,27 +529,25 @@ router.get("/approved", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 router.get("/:eventId", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId); // Find event by ID
+    const event = await Event.findById(req.params.eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-
-    // Prepend the base URL to the image path
+    const volunteerCount = await Applier.countDocuments({ eventId: event._id });
     const eventWithFullImageUrl = {
       ...event._doc,
-      image: `http://localhost:5000${event.image}`,
+      image: event.image ? `http://localhost:5000${event.image}` : null,
+      volunteers: volunteerCount, // <-- This is a number!
     };
-
-    console.log("Event details:", eventWithFullImageUrl); // Log the event details
-    res.status(200).json(eventWithFullImageUrl); // Return the event details
+    res.status(200).json(eventWithFullImageUrl);
   } catch (error) {
-    console.error("Error fetching event details:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+  
 
 router.post("/rejected", async (req, res) => {
   try {
@@ -666,9 +664,9 @@ router.put("/reject/:id", async (req, res) => {
 });
 
 // 📌 Get All Volunteers for an Event
-router.get("/:eventId", async (req, res) => {
+router.get("/my/:eventId", async (req, res) => {
   try {
-    const volunteers = await Volunteer.find({ eventId: req.params.eventId });
+    const volunteers = await Applier.find({ eventId: req.params.eventId });
     res.status(200).json(volunteers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching volunteers", error });
@@ -776,7 +774,7 @@ router.post("/:eventId/register", verifyToken, async (req, res) => {
   }
 });
 // Like or Unlike an event
-router.post("/:eventId/like", async (req, res) => {
+router.post("/:eventId/like/one", async (req, res) => {
   try {
     const { eventId } = req.params;
     const { userId, like } = req.body; // like: true to like, false to unlike

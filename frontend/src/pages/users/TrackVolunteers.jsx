@@ -44,7 +44,7 @@ const TrackVolunteers = () => {
           let eventLocation = "N/A";
           if (applier.eventId) {
             try {
-              const eventRes = await fetch(`http://localhost:5000/api/events/${applier.eventId}`);
+              const eventRes = await fetch(`http://localhost:5000/api/events/my/${applier.eventId}`);
               if (eventRes.ok) {
                 const eventData = await eventRes.json();
                 eventName = eventData.name || eventData.title || "N/A";

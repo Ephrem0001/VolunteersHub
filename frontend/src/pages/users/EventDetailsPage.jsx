@@ -151,8 +151,7 @@ const EventDetailsPage = () => {
       setLikes(data.likes || []);
       setIsLiked(data.likes?.includes(currentUser?._id) || false);
       setCommentList(data.comments || []);
-      setVolunteerCount(Array.isArray(data.volunteers) ? data.volunteers.length : 0);
-      setSubscribed(localStorage.getItem(`event_${eventId}_subscribed`) === "true");
+      setVolunteerCount(typeof data.volunteers === "number" ? data.volunteers : 0);      setSubscribed(localStorage.getItem(`event_${eventId}_subscribed`) === "true");
       setIsBookmarked(localStorage.getItem(`event_${eventId}_bookmarked`) === "true");
       setRating(parseInt(localStorage.getItem(`event_${eventId}_rating`) || "0"));
       
@@ -182,20 +181,22 @@ const EventDetailsPage = () => {
     return () => clearInterval(timer);
   }, [event]);
 
+  // ...existing code...
   const calculateRemainingTime = (eventDate) => {
     const now = new Date();
-    const diff = eventDate - now;
-
+    const eventDateObj = typeof eventDate === "string" ? new Date(eventDate) : eventDate;
+    const diff = eventDateObj - now;
+  
     if (diff <= 0) {
       setRemainingTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       return;
     }
-
+  
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
+  
     setRemainingTime({ days, hours, minutes, seconds });
   };
 
@@ -206,7 +207,7 @@ const EventDetailsPage = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like`, {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like/one`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -581,8 +582,7 @@ const EventDetailsPage = () => {
       </div>
     </div>
   </div>
-)}
-          
+)}  
         </div>
       </motion.div>
 

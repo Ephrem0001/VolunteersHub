@@ -165,7 +165,7 @@ const TrackVolunteers = () => {
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Skills</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name OfEvent</th>
                     {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th> */}
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Location</th>

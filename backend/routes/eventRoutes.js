@@ -743,34 +743,35 @@ router.put('/events/:id', verifyToken, async (req, res) => {
     });
   }
 });
+
 router.post("/:eventId/register", verifyToken, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId);
+    const { eventId } = req.params;
+    const { sex, skills, age } = req.body;
+
+    // Find the event to get its creator
+    const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Prevent duplicate applications by the same user for the same event
-    const existing = await Applier.findOne({
-      eventId: event._id,
-      name: req.body.name, // or use req.user.id if you want to restrict by user
-    });
-    if (existing) {
-      return res.status(400).json({ message: "Already registered" });
-    }
+    // Find the user to get their name
+    const user = await Volunteer.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Save volunteer form info in Applier collection
+    // Create Applier
     const applier = new Applier({
-      name: req.body.name,
-      sex: req.body.sex,
-      skills: req.body.skills,
-      age: req.body.age,
+      userId: user._id,
+      name: user.name, // <-- Now guaranteed to exist
+      sex,
+      skills,
+      age,
       eventId: event._id,
       eventCreatorId: event.createdBy,
     });
-    await applier.save();
 
-    res.json({ message: "Registered successfully" });
+    await applier.save();
+    res.status(201).json({ message: "Registered successfully" });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error(error);
     res.status(500).json({ message: "Registration failed" });
   }
 });
@@ -855,8 +856,8 @@ router.get("/:eventId/comments", async (req, res) => {
 router.get("/:eventId/is-registered", verifyToken, async (req, res) => {
   try {
     const eventId = req.params.eventId;
-    // Use req.user.name or req.user.id depending on your Applier schema
-    const applier = await Applier.findOne({ eventId, name: req.user.name });
+    // Use req.user.id (from JWT) for unique identification
+    const applier = await Applier.findOne({ eventId, userId: req.user.id });
     res.json({ registered: !!applier });
   } catch (error) {
     res.status(500).json({ registered: false });

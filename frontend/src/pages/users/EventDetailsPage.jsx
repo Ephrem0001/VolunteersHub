@@ -10,7 +10,6 @@ import {
   FaMapMarkerAlt,
   FaCalendarAlt,
   FaInfoCircle,
-  // Remove FaClock completely (don't just comment it out)
   FaUsers,
   FaArrowLeft,
   FaShare,
@@ -79,8 +78,6 @@ const EventDetailsPage = () => {
     "arbaminch": { lat: 6.0333, lng: 37.5500 },
     "harar": { lat: 9.3132, lng: 42.1182 }
   };
-
-  // Default event details content
   const defaultEventContent = {
     about: "This community event brings people together to make a positive impact in our local area. Volunteers will work alongside organizers to accomplish meaningful tasks that benefit the community. Whether you're an experienced volunteer or this is your first time, your participation will make a real difference. The event is open to all ages and skill levels, with tasks available for everyone.",
     requirements: [
@@ -96,7 +93,6 @@ const EventDetailsPage = () => {
       "Any necessary personal medications"
     ]
   };
-
   // Sample gallery images (would be replaced with actual event images in a real app)
   const sampleGalleryImages = [
     "https://images.unsplash.com/photo-1541178735493-479c1a27ed24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
@@ -104,7 +100,6 @@ const EventDetailsPage = () => {
     "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
   ];
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -343,13 +338,18 @@ const EventDetailsPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      // Use currentUser for name, not volunteerInfo.name
       const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(volunteerInfo)
+        body: JSON.stringify({
+          sex: volunteerInfo.sex,
+          skills: volunteerInfo.skills,
+          age: volunteerInfo.age,
+        }),
       });
 
       if (!response.ok) throw new Error("Registration failed");
@@ -358,7 +358,7 @@ const EventDetailsPage = () => {
       setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
       setShowForm(false);
       setSubscribed(true);
-showNotification("Thank you for volunteering!", "success");
+      showNotification("Thank you for volunteering!", "success");
     } catch (error) {
       console.error("Registration error:", error);
       showNotification("Registration failed", "error");

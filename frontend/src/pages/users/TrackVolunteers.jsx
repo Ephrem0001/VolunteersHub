@@ -16,10 +16,14 @@ import {
   FaInfoCircle,
   FaStar,
   FaRegStar,
-  FaEllipsisV
+  FaEllipsisV,
+  FaCalendarDay,
+  FaCalendarWeek
 } from "react-icons/fa";
 import { CSVLink } from "react-csv";
 import { toast } from 'react-hot-toast';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const TrackVolunteers = () => {
   const [volunteerRows, setVolunteerRows] = useState([]);
@@ -30,12 +34,17 @@ const TrackVolunteers = () => {
     eventType: "",
     sex: "",
     minAge: "",
-    maxAge: ""
+    maxAge: "",
+    location: "",
+    dateRange: [null, null],
+    upcomingEvents: false,
+    pastEvents: false
   });
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Fetch volunteers data (same as before)
   useEffect(() => {
     console.log("Current user:", user);
     const userId = user?.id || user?._id;
@@ -65,6 +74,7 @@ const TrackVolunteers = () => {
           let eventDate = "";
           let eventLocation = "";
           let eventImage = "";
+          let eventDateTime = null;
           if (applier.eventId) {
             try {
               const eventRes = await fetch(`http://localhost:5000/api/events/my/${applier.eventId}`);
@@ -72,7 +82,8 @@ const TrackVolunteers = () => {
                 const eventData = await eventRes.json();
                 eventName = eventData.name || eventData.title || "";
                 eventType = eventData.category || eventData.type || "";
-                eventDate = eventData.date ? new Date(eventData.date).toLocaleDateString() : "";
+                eventDateTime = eventData.date ? new Date(eventData.date) : null;
+                eventDate = eventDateTime ? eventDateTime.toLocaleDateString() : "";
                 eventLocation = eventData.location || "";
                 eventImage = eventData.image || "";
               }
@@ -91,9 +102,10 @@ const TrackVolunteers = () => {
             eventName,
             eventType,
             eventDate,
+            eventDateTime,
             eventLocation,
             eventImage,
-            rating: Math.floor(Math.random() * 5) + 1 // Random rating for demo
+            rating: Math.floor(Math.random() * 5) + 1
           };
         }));
         const validRows = rows.filter(Boolean);
@@ -128,8 +140,39 @@ const TrackVolunteers = () => {
   };
 
   const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFilters(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }));
+  };
+
+  const handleDateChange = (dates) => {
+    const [start, end] = dates;
+    setFilters(prev => ({ 
+      ...prev, 
+      dateRange: [start, end],
+      upcomingEvents: false,
+      pastEvents: false
+    }));
+  };
+
+  const toggleUpcomingEvents = () => {
+    setFilters(prev => ({ 
+      ...prev, 
+      upcomingEvents: !prev.upcomingEvents,
+      pastEvents: false,
+      dateRange: [null, null]
+    }));
+  };
+
+  const togglePastEvents = () => {
+    setFilters(prev => ({ 
+      ...prev, 
+      pastEvents: !prev.pastEvents,
+      upcomingEvents: false,
+      dateRange: [null, null]
+    }));
   };
 
   const resetFilters = () => {
@@ -137,7 +180,11 @@ const TrackVolunteers = () => {
       eventType: "",
       sex: "",
       minAge: "",
-      maxAge: ""
+      maxAge: "",
+      location: "",
+      dateRange: [null, null],
+      upcomingEvents: false,
+      pastEvents: false
     });
   };
 
@@ -158,8 +205,41 @@ const TrackVolunteers = () => {
       (row.volunteerAge || 0) >= parseInt(filters.minAge);
     const matchesMaxAge = !filters.maxAge || 
       (row.volunteerAge || 0) <= parseInt(filters.maxAge);
+    const matchesLocation = !filters.location ||
+      (row.eventLocation || "").toLowerCase().includes(filters.location.toLowerCase());
 
-    return matchesSearch && matchesEventType && matchesSex && matchesMinAge && matchesMaxAge;
+    // Date filters
+    const now = new Date();
+    let matchesDate = true;
+    
+    if (filters.upcomingEvents) {
+      matchesDate = row.eventDateTime && row.eventDateTime > now;
+    } else if (filters.pastEvents) {
+      matchesDate = row.eventDateTime && row.eventDateTime <= now;
+    } else if (filters.dateRange[0] || filters.dateRange[1]) {
+      const [startDate, endDate] = filters.dateRange;
+      if (row.eventDateTime) {
+        if (startDate && !endDate) {
+          matchesDate = row.eventDateTime >= startDate;
+        } else if (!startDate && endDate) {
+          matchesDate = row.eventDateTime <= endDate;
+        } else if (startDate && endDate) {
+          matchesDate = row.eventDateTime >= startDate && row.eventDateTime <= endDate;
+        }
+      } else {
+        matchesDate = false;
+      }
+    }
+
+    return (
+      matchesSearch && 
+      matchesEventType && 
+      matchesSex && 
+      matchesMinAge && 
+      matchesMaxAge && 
+      matchesLocation && 
+      matchesDate
+    );
   });
 
   const exportData = filteredRows.map(row => ({
@@ -341,47 +421,50 @@ const TrackVolunteers = () => {
           </div>
 
           <AnimatePresence>
-            {filterOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                    <select
-                      name="eventType"
-                      value={filters.eventType}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="">All Types</option>
-                      <option value="environmental">Environmental</option>
-                      <option value="education">Education</option>
-                      <option value="health">Health</option>
-                      <option value="community">Community</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select
-                      name="sex"
-                      value={filters.sex}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                    >
-                      <option value="">All Genders</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  
+        {filterOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              {/* Personal Filters */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                  <select
+                    name="eventType"
+                    value={filters.eventType}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="">All Types</option>
+                    <option value="environmental">Environmental</option>
+                    <option value="education">Education</option>
+                    <option value="health">Health</option>
+                    <option value="community">Community</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                  <select
+                    name="sex"
+                    value={filters.sex}
+                    onChange={handleFilterChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="">All Genders</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Min Age</label>
                     <input
@@ -410,17 +493,90 @@ const TrackVolunteers = () => {
                     />
                   </div>
                 </div>
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={resetFilters}
-                    className="text-sm text-purple-600 hover:text-purple-800 font-medium"
-                  >
-                    Reset Filters
-                  </button>
+              </div>
+
+              {/* Location Filter */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Event Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={filters.location}
+                    onChange={handleFilterChange}
+                    placeholder="City or venue"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                  />
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Quick Date Filters</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleUpcomingEvents}
+                      className={`flex items-center gap-1 px-3 py-1 text-sm rounded-md ${filters.upcomingEvents ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}
+                    >
+                      <FaCalendarDay className="text-sm" />
+                      <span>Upcoming</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={togglePastEvents}
+                      className={`flex items-center gap-1 px-3 py-1 text-sm rounded-md ${filters.pastEvents ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}
+                    >
+                      <FaCalendarWeek className="text-sm" />
+                      <span>Past</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Date Range Filter */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                  <DatePicker
+                    selectsRange={true}
+                    startDate={filters.dateRange[0]}
+                    endDate={filters.dateRange[1]}
+                    onChange={handleDateChange}
+                    isClearable={true}
+                    placeholderText="Select date range"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                    disabled={filters.upcomingEvents || filters.pastEvents}
+                  />
+                </div>
+                
+                {filters.dateRange[0] || filters.dateRange[1] ? (
+                  <div className="text-sm text-gray-600">
+                    {filters.dateRange[0] && filters.dateRange[1] ? (
+                      <span>
+                        {filters.dateRange[0].toLocaleDateString()} to {filters.dateRange[1].toLocaleDateString()}
+                      </span>
+                    ) : filters.dateRange[0] ? (
+                      <span>After {filters.dateRange[0].toLocaleDateString()}</span>
+                    ) : (
+                      <span>Before {filters.dateRange[1].toLocaleDateString()}</span>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex justify-between mt-2">
+              <button
+                onClick={resetFilters}
+                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                Reset All Filters
+              </button>
+              <div className="text-sm text-gray-500">
+                Showing {filteredRows.length} of {volunteerRows.length} volunteers
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
         </div>
 
         <motion.div

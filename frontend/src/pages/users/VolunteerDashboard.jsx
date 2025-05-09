@@ -738,8 +738,7 @@ const VolunteerDashboard = () => {
                           {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
                         </div>
                         <div className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                          <FaUsers className="mr-1" /> {event.volunteersRegistered} joined
-                        </div>
+                        <FaUsers className="mr-1" /> {event.volunteers} joined                        </div>
                       </div>
                     </div>
 

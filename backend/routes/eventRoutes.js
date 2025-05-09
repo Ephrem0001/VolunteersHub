@@ -515,15 +515,15 @@ router.get("/approved", async (req, res) => {
   try {
     // Fetch approved events and include volunteers array
     const events = await Event.find({ status: "approved" });
-
-    // Map events to include full image URL and volunteers count
-    const eventsWithDetails = events.map((event) => ({
-      ...event._doc,
-      image: event.image ? `http://localhost:5000${event.image}` : null,
-      volunteersRegistered: event.volunteers ? event.volunteers.length : 0, // Add volunteers count
-    }));
-
-    res.status(200).json(eventsWithDetails);
+const eventsWithVolunteerCount = await Promise.all(events.map(async (event) => {
+  const volunteerCount = await Applier.countDocuments({ eventId: event._id });
+  return {
+    ...event._doc,
+    volunteers: volunteerCount,
+    image: event.image ? `http://localhost:5000${event.image}` : null,
+  };
+}));
+res.json(eventsWithVolunteerCount);
   } catch (error) {
     console.error("Error fetching approved events:", error);
     res.status(500).json({ message: "Server error" });

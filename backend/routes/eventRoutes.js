@@ -663,13 +663,21 @@ router.put("/reject/:id", async (req, res) => {
   }
 });
 
-// 📌 Get All Volunteers for an Event
+// 📌 Get All Trackvolunters part for an Event
 router.get("/my/:eventId", async (req, res) => {
   try {
-    const volunteers = await Applier.find({ eventId: req.params.eventId });
-    res.status(200).json(volunteers);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching volunteers", error });
+    const event = await Event.findById(req.params.eventId);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    res.json({
+      name: event.name || event.title,
+      title: event.title,
+      category: event.category,
+      type: event.type,
+      date: event.date,
+      location: event.location,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 

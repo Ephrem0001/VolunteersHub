@@ -38,22 +38,22 @@ const TrackVolunteers = () => {
         console.log("Fetched appliers:", appliers);
     
         const rows = await Promise.all(appliers.map(async (applier) => {
-          let eventName = "N/A";
-          let eventType = "N/A";
-          let eventDate = "N/A";
-          let eventLocation = "N/A";
+          let eventName = "";
+          let eventType = "";
+          let eventDate = "";
+          let eventLocation = "";
           if (applier.eventId) {
             try {
               const eventRes = await fetch(`http://localhost:5000/api/events/my/${applier.eventId}`);
               if (eventRes.ok) {
                 const eventData = await eventRes.json();
-                eventName = eventData.name || eventData.title || "N/A";
-                eventType = eventData.category || eventData.type || "N/A";
-                eventDate = eventData.date ? new Date(eventData.date).toLocaleDateString() : "N/A";
-                eventLocation = eventData.location || "N/A";
+                eventName = eventData.name || eventData.title || "";
+                eventType = eventData.category || eventData.type || "";
+                eventDate = eventData.date ? new Date(eventData.date).toLocaleDateString() : "";
+                eventLocation = eventData.location || "";
               }
             } catch (err) {
-              // Use defaults if fetch fails
+              // Leave as empty string if fetch fails
             }
           }
           return {
@@ -159,32 +159,30 @@ const TrackVolunteers = () => {
           ) : filteredRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Skills</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name OfEvent</th>
-                    {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th> */}
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredRows.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-2">{row.volunteerName}</td>
-                      <td className="px-4 py-2">{row.volunteerSex}</td>
-                      <td className="px-4 py-2">{row.volunteerAge}</td>
-                      <td className="px-4 py-2">{row.volunteerSkills}</td>
-                      <td className="px-4 py-2">{row.eventName}</td>
-                      {/* <td className="px-4 py-2">{row.eventType}</td> */}
-                      <td className="px-4 py-2">{row.eventDate}</td>
-                      <td className="px-4 py-2">{row.eventLocation}</td>
-                    </tr>
-                  ))}
-                </tbody>
+              <thead>
+  <tr>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Volunteer Name</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Skills</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event Name</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event Date</th>
+    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event Location</th>
+  </tr>
+</thead>
+<tbody className="bg-white divide-y divide-gray-100">
+  {filteredRows.map((row, idx) => (
+    <tr key={idx}>
+      <td className="px-4 py-2">{row.volunteerName}</td>
+      <td className="px-4 py-2">{row.volunteerSex}</td>
+      <td className="px-4 py-2">{row.volunteerAge}</td>
+      <td className="px-4 py-2">{row.volunteerSkills}</td>
+      <td className="px-4 py-2">{row.eventName}</td>
+      <td className="px-4 py-2">{row.eventDate}</td>
+      <td className="px-4 py-2">{row.eventLocation}</td>
+    </tr>
+  ))}
+</tbody>
               </table>
             </div>
           ) : (

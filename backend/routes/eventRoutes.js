@@ -748,29 +748,31 @@ router.put('/events/:id', verifyToken, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});
-
-router.post("/:eventId/register", verifyToken, async (req, res) => {
+});router.post("/:eventId/register", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
+    const userId = req.user.id; // should be a string
     const { sex, skills, age } = req.body;
 
-    // Find the event to get its creator
+    // Always compare as string
+    const alreadyRegistered = await Applier.findOne({ userId: String(userId), eventId: String(eventId) });
+    if (alreadyRegistered) {
+      return res.status(400).json({ message: "Already registered for this event" });
+    }
+
     const event = await Event.findById(eventId);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Find the user to get their name
-    const user = await Volunteer.findById(req.user.id);
+    const user = await Volunteer.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Create Applier
     const applier = new Applier({
-      userId: user._id,
-      name: user.name, // <-- Now guaranteed to exist
+      userId: String(user._id),
+      name: user.name,
       sex,
       skills,
       age,
-      eventId: event._id,
+      eventId: String(event._id),
       eventCreatorId: event.createdBy,
     });
 
@@ -862,8 +864,8 @@ router.get("/:eventId/comments", async (req, res) => {
 router.get("/:eventId/is-registered", verifyToken, async (req, res) => {
   try {
     const eventId = req.params.eventId;
-    // Use req.user.id (from JWT) for unique identification
-    const applier = await Applier.findOne({ eventId, userId: req.user.id });
+    const userId = req.user.id;
+    const applier = await Applier.findOne({ eventId: String(eventId), userId: String(userId) });
     res.json({ registered: !!applier });
   } catch (error) {
     res.status(500).json({ registered: false });

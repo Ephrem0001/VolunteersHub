@@ -122,25 +122,26 @@ const EventDetailsPage = () => {
   
     fetchUserData();
   }, []);
-  useEffect(() => {
-    const checkRegistration = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token || !currentUser) {
-          setSubscribed(false);
-          return;
-        }
-        const res = await fetch(`http://localhost:5000/api/events/${eventId}/is-registered`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        setSubscribed(data.registered);
-      } catch (err) {
+  const checkRegistration = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token || !currentUser) {
         setSubscribed(false);
+        return;
       }
-    };
-    if (currentUser && eventId) checkRegistration();
+      const res = await fetch(`http://localhost:5000/api/events/${eventId}/is-registered`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setSubscribed(data.registered);
+    } catch (err) {
+      setSubscribed(false);
+    }
   }, [currentUser, eventId]);
+
+ 
+
+
   const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true);
@@ -151,24 +152,24 @@ const EventDetailsPage = () => {
       setLikes(data.likes || []);
       setIsLiked(data.likes?.includes(currentUser?._id) || false);
       setCommentList(data.comments || []);
-      setVolunteerCount(typeof data.volunteers === "number" ? data.volunteers : 0);      setSubscribed(localStorage.getItem(`event_${eventId}_subscribed`) === "true");
+      setVolunteerCount(typeof data.volunteers === "number" ? data.volunteers : 0);
       setIsBookmarked(localStorage.getItem(`event_${eventId}_bookmarked`) === "true");
       setRating(parseInt(localStorage.getItem(`event_${eventId}_rating`) || "0"));
-      
-      // Calculate remaining time until event
-      if (data.date) {
-        calculateRemainingTime(new Date(data.date));
-      }
+      if (data.date) calculateRemainingTime(new Date(data.date));
     } catch (error) {
       console.error("Error fetching event details:", error);
     } finally {
       setLoading(false);
     }
-  },[eventId, currentUser]);
+  }, [eventId, currentUser]);
 
   useEffect(() => {
     fetchEventDetails();
   }, [eventId, currentUser, fetchEventDetails]);
+
+  useEffect(() => {
+    checkRegistration();
+  }, [currentUser, eventId, checkRegistration]);
 
   useEffect(() => {
     // Set up interval for countdown timer
@@ -310,6 +311,10 @@ const EventDetailsPage = () => {
       showNotification("Please log in to join this event", "error");
       return;
     }
+    if (subscribed) {
+      showNotification("You are already registered for this event.", "info");
+      return;
+    }
     setShowForm(true);
   };
 
@@ -339,7 +344,6 @@ const EventDetailsPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      // Use currentUser for name, not volunteerInfo.name
       const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
         method: "POST",
         headers: {
@@ -353,12 +357,20 @@ const EventDetailsPage = () => {
         }),
       });
 
-      if (!response.ok) throw new Error("Registration failed");
-
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (errorText.includes("Already registered")) {
+          showNotification("You are already registered for this event.", "info");
+          setShowForm(false);
+          await checkRegistration();
+          return;
+        }
+        throw new Error("Registration failed");
+      }
       await fetchEventDetails();
       setVolunteerInfo({ name: "", sex: "", skills: "", age: "" });
       setShowForm(false);
-      setSubscribed(true);
+      await checkRegistration();
       showNotification("Thank you for volunteering!", "success");
     } catch (error) {
       console.error("Registration error:", error);

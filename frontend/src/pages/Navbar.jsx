@@ -50,20 +50,8 @@ const Navbar = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <input
-            type="text"
-            placeholder="Search events..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-40 md:w-64 px-4 py-2 bg-transparent text-black placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-l-lg"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-300 flex items-center"
-          >
-            <FontAwesomeIcon icon={faSearch} className="mr-2" />
-            <span className="hidden md:inline">Search</span>
-          </button>
+         
+  
         </motion.form>
 
         {/* Centered Navigation Links (Hidden on Mobile) */}

@@ -506,7 +506,7 @@ const AdminDashboard = () => {
             className="flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all text-white shadow-lg mb-4"
           >
             <RiAdminFill className="mr-2" />
-            <span className="text-sm font-semibold">Admin Login</span>
+            <span className="text-sm font-semibold">SAdmin Login</span>
           </motion.button>
 
           {/* Logout Button */}

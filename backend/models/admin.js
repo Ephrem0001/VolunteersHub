@@ -22,20 +22,7 @@ const adminSchema = new mongoose.Schema({
     required: [true, "Password is required"],
     minlength: [8, "Password must be at least 8 characters"]
   },
-  role: {
-    type: String,
-    enum: ["superadmin", "admin", "moderator"],
-    default: "admin"
-  },
-  status: {
-    type: String,
-    enum: ["active", "inactive", "blocked"],
-    default: "active"
-  },
-  permissions: [{
-    type: String,
-    enum: ["manage_ngos", "manage_volunteers", "approve_events", "view_analytics", "system_settings"]
-  }],
+  
   lastActive: {
     type: Date,
     default: Date.now

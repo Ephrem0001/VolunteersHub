@@ -65,7 +65,6 @@ const AdminDashboard = () => {
   const [editForm, setEditForm] = useState({
     name: "",
     email: "",
-    
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -78,7 +77,6 @@ const AdminDashboard = () => {
     confirm: false
   });
 
-  const storedRole = localStorage.getItem("user");
   const navigate = useNavigate();
 
   // Fetch admin profile on mount
@@ -90,11 +88,11 @@ const AdminDashboard = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        setAdmin(data.admin);
+        setAdmin(data.user);
         setEditForm({
-          name: data.admin?.name || "",
-          email: data.admin?.email || "",
-          role: data.admin?.role || ""
+          name: data.user?.name || "",
+          email: data.user?.email || "",
+          role: data.user?.role || ""
         });
       } catch (err) {
         toast.error("Failed to load admin profile");
@@ -110,31 +108,39 @@ const AdminDashboard = () => {
     window.location.replace("/login");
   };
 
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(editForm)
-      });
-      if (res.ok) {
-        toast.success("Profile updated successfully!");
-        setShowEditProfile(false);
-        setAdmin({ ...admin, ...editForm });
-      } else {
-        const errorData = await res.json();
-        toast.error(errorData.message || "Failed to update profile");
-      }
-    } catch (err) {
-      toast.error("Failed to update profile");
-    }
-  };
+  // Edit Profile
+// Updated handleProfileUpdate function
+const handleProfileUpdate = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:5000/api/admin/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        name: editForm.name,
+        email: editForm.email
+      })
+    });
 
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    toast.success("Profile updated!");
+    setAdmin(data.user);
+    setShowEditProfile(false);
+  } catch (err) {
+    toast.error(err.message || "Update failed");
+    console.error("Update error:", err);
+  }
+};
+
+  // Change Password
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -302,59 +308,60 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Edit Profile Modal */}
-      <AnimatePresence>
-        {showEditProfile && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
-              <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
-              <form onSubmit={handleProfileUpdate}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Name</label>
-                    <input
-                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
-                      value={editForm.name}
-                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      type="email"
-                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
-                      value={editForm.email}
-                      onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-              
-                </div>
-                <div className="flex justify-end gap-2 mt-6">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
-                    onClick={() => setShowEditProfile(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded bg-purple-600 text-white"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
+      // ...existing code...
+<AnimatePresence>
+  {showEditProfile && (
+    <motion.div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+        <form onSubmit={handleProfileUpdate}>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Name</label>
+              <input
+                className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                value={editForm.name}
+                onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                required
+              />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <div>
+              <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                value={editForm.email}
+                onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                required
+              />
+            </div>
+            {/* Removed Role field */}
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              type="button"
+              className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+              onClick={() => setShowEditProfile(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-purple-600 text-white"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
       {/* Change Password Modal */}
       <AnimatePresence>
@@ -483,7 +490,6 @@ const AdminDashboard = () => {
               {isSidebarOpen ? "◀" : "▶"}
             </button>
           </div>
-
           <nav className="space-y-1">
             {tabs.map((tab) => (
               <SidebarLink
@@ -495,7 +501,6 @@ const AdminDashboard = () => {
             ))}
           </nav>
         </div>
-
         {/* Sidebar Footer */}
         <div className="mt-auto pt-4 border-t border-gray-700">
           {/* Admin Login Button */}
@@ -508,7 +513,6 @@ const AdminDashboard = () => {
             <RiAdminFill className="mr-2" />
             <span className="text-sm font-semibold">SAdmin Login</span>
           </motion.button>
-
           {/* Logout Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -549,7 +553,6 @@ const AdminDashboard = () => {
                 {activeTab === "settings" && "Configure system settings"}
               </p>
             </div>
-            
             {/* Top right admin profile dropdown */}
             <div className="flex items-center space-x-4">
               <motion.button
@@ -560,7 +563,6 @@ const AdminDashboard = () => {
               >
                 {isSidebarOpen ? "◀" : "▶"}
               </motion.button>
-              
               {/* Admin profile dropdown */}
               <div className="relative">
                 <button
@@ -575,7 +577,6 @@ const AdminDashboard = () => {
                   <span className="font-medium text-gray-700">{admin?.name || "Admin"}</span>
                   {showProfileMenu ? <FaChevronUp /> : <FaChevronDown />}
                 </button>
-                
                 <AnimatePresence>
                   {showProfileMenu && (
                     <motion.div
@@ -599,7 +600,6 @@ const AdminDashboard = () => {
                         <FaUserCog className="text-purple-500" />
                         <span>Edit Profile</span>
                       </button>
-                      
                       <button
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                         onClick={() => {
@@ -660,7 +660,6 @@ const AdminDashboard = () => {
                   <FaUserShield className="text-4xl opacity-30" />
                 </div>
               </motion.div>
-              
               <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
@@ -673,7 +672,6 @@ const AdminDashboard = () => {
                   <FaUsers className="text-4xl opacity-30" />
                 </div>
               </motion.div>
-              
               <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 text-white shadow-lg"

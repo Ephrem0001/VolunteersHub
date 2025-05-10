@@ -126,17 +126,7 @@ router.post("/register/volunteer", async (req, res) => {
       res.status(500).json({ message: "Server error. Please try again later." });
     }
   });
-  // @route  GET /api/profile
-// @desc   Get user profile
-// @access Protected (requires authentication)
-
- // @route  PUT /api/profile/update
-// @desc   Update user profile
-// @access Protected (requires authentication)
-// ...existing code...
-// @route  PUT /api/profile/update
-// @desc   Update user profile
-// @access Protected (requires authentication)
+ 
 router.put("/profile/update", verifyToken, async (req, res) => {
   const { name, email, currentPassword, newPassword, organization, description } = req.body; // <-- add organization, description
 
@@ -251,94 +241,7 @@ router.post("/register/ngo", async (req, res) => {
   }
 });
 
-router.put("/profile/update", verifyToken, async (req, res) => {
-  const { name, email, currentPassword, newPassword, organization, description } = req.body;
 
-  try {
-    let user;
-    if (req.user.role === "volunteer") {
-      user = await Volunteer.findById(req.user.id);
-    } else if (req.user.role === "ngo") {
-      user = await NGO.findById(req.user.id);
-    } else if (req.user.role === "admin") {
-      user = await Admin.findById(req.user.id);
-    }
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if (newPassword) {
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: "Current password is incorrect" });
-      }
-      user.password = await bcrypt.hash(newPassword, 10);
-    }
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (organization) user.organization = organization;
-    if (description) user.description = description;
-
-    await user.save();
-
-    const userResponse = user.toObject();
-    delete userResponse.password;
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      user: userResponse
-    });
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-// router.put("/profile/update", verifyToken, async (req, res) => {
-//   const { name, email, currentPassword, newPassword } = req.body;
-
-//   try {
-//     let user;
-
-//     // Determine user role and fetch user
-//     if (req.user.role === "volunteer") {
-//       user = await Volunteer.findById(req.user.id);
-//     } else if (req.user.role === "ngo") {
-//       user = await NGO.findById(req.user.id);
-//     } else if (req.user.role === "admin") {
-//       user = await Admin.findById(req.user.id);
-//     }
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Verify current password if changing password
-//     if (newPassword) {
-//       const isMatch = await bcrypt.compare(currentPassword, user.password);
-//       if (!isMatch) {
-//         return res.status(400).json({ message: "Current password is incorrect" });
-//       }
-//       user.password = await bcrypt.hash(newPassword, 10);
-//     }
-
-//     // Update other fields
-//     if (name) user.name = name;
-//     if (email) user.email = email;
-
-//     await user.save();
-
-//     // Return updated user (without password)
-//     const userResponse = user.toObject();
-//     delete userResponse.password;
-
-//     res.status(200).json({ 
-//       message: "Profile updated successfully",
-//       user: userResponse
-//     });
-//   } catch (error) {
-//     console.error("Error updating profile:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const cleanEmail = email.trim().toLowerCase();

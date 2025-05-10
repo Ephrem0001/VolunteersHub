@@ -36,13 +36,19 @@ const verifyToken = async (req, res, next) => {
  */
 const verifyAdmin = async (req, res, next) => {
   try {
-    const admin = await Admin.findById(req.user.id);
-
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
+    // First check if user has admin role in token
+    if (req.user.role.toLowerCase() !== "admin") {
+      return res.status(403).json({ message: "Admin privileges required" });
     }
 
-    req.user = admin; // Attach admin data to request object
+    // Then verify admin exists in database (optional)
+    const admin = await Admin.findById(req.user.id);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found in database" });
+    }
+
+    // Attach full admin document to request
+    req.admin = admin;
     next();
   } catch (error) {
     console.error("Admin verification error:", error);
@@ -75,8 +81,9 @@ const verifyNGO = async (req, res, next) => {
 /**
  * Role-Based Middleware for Admins
  */
+// In your isAdmin middleware
 const isAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== "Admin") {
+  if (!req.user || req.user.role.toLowerCase() !== "admin") {  // Case insensitive check
     return res.status(403).json({ message: "Access denied. Only admins are allowed." });
   }
   next();

@@ -165,8 +165,7 @@ router.get("/", async (req, res) => {
  * @desc    Get all pending events (for admin approval)
  * @access  Admin only
  */
-router.get("/pending", verifyToken, verifyAdmin, isAdmin, async (req, res) => {
-
+router.get("/pending", verifyToken, isAdmin, async (req, res) => {
   try {
     
     const pendingEvents = await Event.find({ status: "pending" });

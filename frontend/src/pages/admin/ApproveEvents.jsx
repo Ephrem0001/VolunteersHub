@@ -5,9 +5,7 @@ const ApproveEvents = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchPendingEvents();
-  }, []);
+ 
 
   const fetchPendingEvents = async () => {
     setLoading(true);
@@ -28,6 +26,10 @@ const ApproveEvents = () => {
       setLoading(false);
     }
   };
+   useEffect(() => {
+    fetchPendingEvents();
+  }, []);
+  
   const updateEventStatus = async (id, status, ngoEmail) => {
     try {
       const endpoint = `http://localhost:5000/api/events/${status}/${id}`;

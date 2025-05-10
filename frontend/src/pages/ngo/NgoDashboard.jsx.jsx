@@ -5,11 +5,13 @@ import {
   FaSignOutAlt, FaHandsHelping, FaUsers, FaBullhorn, 
   FaFacebook, FaTwitter, FaLinkedin, FaInstagram,
   FaChartLine, FaCalendarAlt, FaUserCog, FaArrowRight,
-  FaBell, FaEnvelope
+  FaBell, FaEnvelope, FaLock, FaEye, FaEyeSlash
 } from "react-icons/fa";
 import { MdEventAvailable, MdDashboard } from "react-icons/md";
 import { RiTeamFill } from "react-icons/ri";
 import { IoMdAnalytics } from "react-icons/io";
+import { FaChevronDown, FaChevronUp, FaUserCircle } from "react-icons/fa";
+import { toast } from 'react-hot-toast';
 
 const NgoDashboard = () => {
   const navigate = useNavigate();
@@ -23,6 +25,26 @@ const NgoDashboard = () => {
   });
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [ngo, setNgo] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [editForm, setEditForm] = useState({ 
+    name: "", 
+    email: "",
+    organization: "",
+    description: "" 
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -69,10 +91,113 @@ const NgoDashboard = () => {
     return () => clearInterval(interval);
   }, [navigate]);
 
+  // Fetch NGO profile
+  useEffect(() => {
+    const fetchNgo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+       const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    name: editForm.name,
+    email: editForm.email,
+    organization: editForm.organization,
+    description: editForm.description
+  })
+});
+        const data = await res.json();
+        setNgo(data.ngo);
+        setEditForm({ 
+          name: data.ngo?.name || "", 
+          email: data.ngo?.email || "",
+          organization: data.ngo?.organization || "",
+          description: data.ngo?.description || "" 
+        });
+      } catch (err) {
+        setNgo(null);
+      }
+    };
+    fetchNgo();
+  }, []);
+   
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.replace("/login");
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        toast.success("Profile updated successfully!");
+        setShowEditProfile(false);
+        setNgo({ ...ngo, ...editForm });
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to update profile");
+      }
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords don't match!");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+    const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    currentPassword: passwordForm.currentPassword,
+    newPassword: passwordForm.newPassword
+  })
+});
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Password changed successfully!");
+        setShowChangePassword(false);
+        setPasswordForm({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+      } else {
+        toast.error(data.message || "Failed to change password");
+      }
+    } catch (err) {
+      toast.error("Failed to change password");
+    }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   const markAsRead = (id) => {
@@ -127,13 +252,6 @@ const NgoDashboard = () => {
       path: "/analytics/dashboard",
       gradient: "from-red-600 to-pink-600"
     },
-    // {
-    //   icon: <FaUserCog className="text-4xl text-cyan-400" />,
-    //   title: "Settings",
-    //   description: "Manage your organization profile",
-    //   path: "/ngo/ngo-settings",
-    //   gradient: "from-cyan-600 to-sky-600"
-    // }
   ];
 
   const quickStats = [
@@ -182,102 +300,265 @@ const NgoDashboard = () => {
         animate={{ y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <div className="flex items-center justify-between w-full">
-          <motion.div 
-            className="flex items-center space-x-4"
-            whileHover={{ scale: 1.02 }}
+        {/* Left side - Empty or you can add other elements if needed */}
+        <div></div>
+
+        {/* Right side - Profile menu */}
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center space-x-2 bg-white hover:bg-gray-100 px-3 py-2 rounded-full shadow-sm"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <button 
-              className="md:hidden text-white mr-2"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <motion.div
-              className="p-3 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full shadow-lg"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <FaHandsHelping className="text-2xl text-white" />
-            </motion.div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
-              NGO Dashboard
-            </h1>
-          </motion.div>
+            {ngo?.logo ? (
+              <img src={ngo.logo} alt="Logo" className="w-8 h-8 rounded-full object-cover border-2 border-purple-500" />
+            ) : (
+              <FaUserCircle className="w-8 h-8 text-purple-500" />
+            )}
+            <span className="hidden md:inline font-medium text-gray-700">{ngo?.name || "NGO"}</span>
+            {showProfileMenu ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+          </motion.button>
           
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <motion.button
-                className="p-2 rounded-full hover:bg-gray-700/50 relative"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowNotifications(!showNotifications)}
+          <AnimatePresence>
+            {showProfileMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200"
               >
-                <FaBell className="text-xl" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </motion.button>
-              
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    className="absolute right-0 mt-2 w-72 bg-gray-800/90 backdrop-blur-lg rounded-xl shadow-xl z-50 overflow-hidden"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.2 }}
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3">
+                    {ngo?.logo ? (
+                      <img src={ngo.logo} alt="Logo" className="w-10 h-10 rounded-full object-cover border-2 border-purple-500" />
+                    ) : (
+                      <FaUserCircle className="w-10 h-10 text-purple-500" />
+                    )}
+                    <div>
+                      <h4 className="font-medium text-gray-900">{ngo?.name || "NGO"}</h4>
+                      <p className="text-xs text-gray-500">{ngo?.email || ""}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="py-1">
+   // ...inside your profile menu...
+<button
+  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+  onClick={async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setEditForm({
+        name: data.user?.name || "",
+        email: data.user?.email || "",
+        organization: data.user?.organization || "",
+      });
+      setShowEditProfile(true);
+      setShowProfileMenu(false);
+    } catch {
+      toast.error("Failed to load profile info");
+    }
+  }}
+>
+  <FaUserCog className="text-purple-500" />
+  <span>Edit Profile</span>
+</button>
+                  
+                  <button
+  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+  onClick={() => {
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+    setShowChangePassword(true);
+    setShowProfileMenu(false);
+  }}
+>
+  <FaLock className="text-purple-500" />
+  <span>Change Password</span>
+</button>
+                  
+                  <div className="border-t border-gray-200"></div>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"
+                    onClick={handleLogout}
                   >
-                    <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-                      <h3 className="font-semibold">Notifications</h3>
-                      {unreadCount > 0 && (
-                        <button 
-                          className="text-xs text-purple-400 hover:text-purple-300"
-                          onClick={markAllAsRead}
-                        >
-                          Mark all as read
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-60 overflow-y-auto">
-                      {notifications.length > 0 ? (
-                        notifications.map(notification => (
-                          <div 
-                            key={notification.id}
-                            className={`p-3 border-b border-gray-700/50 hover:bg-gray-700/50 cursor-pointer ${!notification.read ? 'bg-gray-700/30' : ''}`}
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <p className="text-sm">{notification.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">{notification.timestamp}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-gray-400">
-                          No notifications
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            
-            <motion.button
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-pink-600 px-5 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaSignOutAlt className="text-lg" /> 
-              <span className="hidden sm:inline">Logout</span>
-            </motion.button>
-          </div>
+                    <FaSignOutAlt />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.nav>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {showEditProfile && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+              <form onSubmit={handleProfileUpdate}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Organization Name</label>
+                    <input
+                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                      value={editForm.name}
+                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      type="email"
+                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                      value={editForm.email}
+                      onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  
+                </div>
+                
+                <div className="flex justify-end gap-2 mt-6">
+                  <button 
+                    type="button" 
+                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+                    onClick={() => setShowEditProfile(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-4 py-2 rounded bg-purple-600 text-white"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {showChangePassword && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Change Password</h2>
+              <form onSubmit={handlePasswordChange}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Current Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.current ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.currentPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, currentPassword: e.target.value }))}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("current")}
+                      >
+                        {showPassword.current ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.new ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.newPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, newPassword: e.target.value }))}
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("new")}
+                      >
+                        {showPassword.new ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Confirm New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.confirm ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.confirmPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("confirm")}
+                      >
+                        {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2 mt-6">
+                  <button 
+                    type="button" 
+                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+                    onClick={() => {
+                      setShowChangePassword(false);
+                      setPasswordForm({
+                        currentPassword: "",
+                        newPassword: "",
+                        confirmPassword: ""
+                      });
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="px-4 py-2 rounded bg-purple-600 text-white"
+                  >
+                    Change Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Menu */}
       <AnimatePresence>

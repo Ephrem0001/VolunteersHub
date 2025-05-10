@@ -748,7 +748,8 @@ router.put('/events/:id', verifyToken, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});router.post("/:eventId/register", verifyToken, async (req, res) => {
+});
+router.post("/:eventId/register", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id; // should be a string
@@ -871,6 +872,42 @@ router.get("/:eventId/is-registered", verifyToken, async (req, res) => {
     res.status(500).json({ registered: false });
   }
 });
+// ...existing code...
 
+// GET /users/:id/stats
+router.get('/:id/stats', async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // 1. Events attended: count of Applier docs for this user
+    const eventsAttended = await Applier.countDocuments({ userId: String(userId) });
+
+    // 2. Hours volunteered: If you don't track hours, you can estimate (e.g., 2 hours per event)
+    // Or set to 0 if you don't want to estimate
+    const hoursVolunteered = eventsAttended * 2; // Change 2 to your estimate per event
+
+    // 3. Upcoming events: count of Applier docs where event date is in the future
+    // Need to join with Event to check date
+    const now = new Date();
+    const upcomingApplies = await Applier.find({ userId: String(userId) }).populate('eventId');
+    const upcomingEvents = upcomingApplies.filter(apply => {
+      const event = apply.eventId;
+      return event && event.date && new Date(event.date) >= now;
+    }).length;
+
+    // 4. Impact points: Example logic (10 points per event)
+    const impactPoints = eventsAttended * 10;
+
+    res.json({
+      eventsAttended,
+      hoursVolunteered,
+      upcomingEvents,
+      impactPoints
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
 
 module.exports = router;

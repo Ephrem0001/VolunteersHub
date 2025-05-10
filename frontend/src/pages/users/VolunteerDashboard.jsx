@@ -57,45 +57,46 @@ const VolunteerDashboard = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-// Toggle expand/collapse for a single event (accordion style)
 
-  // Load user data and favorites
- // ...existing code...
-  // Load user data and favorites
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+useEffect(() => {
+  const fetchUserDataAndStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setUser(data.user);
+
+      // Fetch stats if user exists
+      if (data.user && data.user._id) {
+        const statsRes = await fetch(`http://localhost:5000/api/users/${data.user._id}/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await response.json();
-        setUser(data.user);
-
-        // ❌ Removed stats fetch from /api/users/:id/stats
-        // setStats({ ... }) will fallback below if needed
-
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        // Fallback to random stats if API fails
-        setStats({
-          eventsAttended: Math.floor(Math.random() * 20),
-          hoursVolunteered: Math.floor(Math.random() * 100),
-          upcomingEvents: Math.floor(Math.random() * 5),
-          impactPoints: Math.floor(Math.random() * 500)
-        });
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
       }
-    };
-
-    const savedFavorites = localStorage.getItem("volunteerFavorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
+    } catch (error) {
+      console.error("Error fetching user data or stats:", error);
+      setStats({
+        eventsAttended: Math.floor(Math.random() * 20),
+        hoursVolunteered: Math.floor(Math.random() * 100),
+        upcomingEvents: Math.floor(Math.random() * 5),
+        impactPoints: Math.floor(Math.random() * 500)
+      });
     }
+  };
 
-    fetchUserData();
-  }, []);
+  const savedFavorites = localStorage.getItem("volunteerFavorites");
+  if (savedFavorites) {
+    setFavorites(JSON.parse(savedFavorites));
+  }
+
+  fetchUserDataAndStats();
+}, []);
+// ...existing code...
 
   useEffect(() => {
     localStorage.setItem("volunteerFavorites", JSON.stringify(favorites));

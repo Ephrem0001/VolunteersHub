@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { Chart, registerables } from 'chart.js';
 import {
   FaUsers,
@@ -15,7 +15,14 @@ import {
   FaRegCalendarTimes,
   FaCog,
   FaBell,
-  FaEnvelope
+  FaEnvelope,
+  FaUserCog,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaChevronDown,
+  FaChevronUp,
+  FaUserCircle
 } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
 import ManageNGO from "./ManageNGO";
@@ -24,6 +31,8 @@ import ApproveEvents from "./ApproveEvents";
 import ApprovedEvents from "./ApprovedEvents";
 import RejectedEvents from "./RejectedEvents";
 import ContactMessages from './ContactMessages';
+import { toast } from 'react-hot-toast';
+
 // Register Chart.js components
 Chart.register(...registerables);
 
@@ -48,13 +57,125 @@ const AdminDashboard = () => {
     activeSessions: 142,
   });
 
+  // Profile states
+  const [admin, setAdmin] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    
+  });
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+
   const storedRole = localStorage.getItem("user");
-  console.log(storedRole)
+  const navigate = useNavigate();
+
+  // Fetch admin profile on mount
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/admin/profile", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setAdmin(data.admin);
+        setEditForm({
+          name: data.admin?.name || "",
+          email: data.admin?.email || "",
+          role: data.admin?.role || ""
+        });
+      } catch (err) {
+        toast.error("Failed to load admin profile");
+      }
+    };
+    fetchAdminProfile();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("admin");
     window.location.replace("/login");
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        toast.success("Profile updated successfully!");
+        setShowEditProfile(false);
+        setAdmin({ ...admin, ...editForm });
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.message || "Failed to update profile");
+      }
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords don't match!");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/admin/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Password changed successfully!");
+        setShowChangePassword(false);
+        setPasswordForm({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+      } else {
+        toast.error(data.message || "Failed to change password");
+      }
+    } catch (err) {
+      toast.error("Failed to change password");
+    }
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   const fetchAnalyticsData = () => {
@@ -81,10 +202,11 @@ const AdminDashboard = () => {
       autoApproveThreshold: e.target.value
     }));
   };
-  const navigate = useNavigate();
-  const handleAdminClick = () => {
+
+  const handleAdminLoginClick = () => {
     navigate('/admin-login');
   };
+
   const runSystemBackup = () => {
     setTimeout(() => {
       setSystemStatus(prev => ({
@@ -107,7 +229,7 @@ const AdminDashboard = () => {
     { key: "approved-events", icon: FaCheck, label: "Approved Events" },
     { key: "rejected-events", icon: FaRegCalendarTimes, label: "Rejected Events" },
     { key: "analytics", icon: FaChartLine, label: "Analytics" },
-    { key: "contact-messages", icon: FaEnvelope, label: "Contact Messages" }, // Add this line
+    { key: "contact-messages", icon: FaEnvelope, label: "Contact Messages" },
     { key: "settings", icon: FaCog, label: "Settings" }
   ];
 
@@ -117,7 +239,7 @@ const AdminDashboard = () => {
     "approve-events": "Pending Event Approvals",
     "approved-events": "Approved Events",
     "rejected-events": "Rejected Events",
-    "contact-messages": "Contact Messages", // Add this line
+    "contact-messages": "Contact Messages",
     "analytics": "System Analytics",
     "settings": "Admin Settings"
   };
@@ -138,278 +260,7 @@ const AdminDashboard = () => {
     </motion.div>
   );
 
-  const AnalyticsDashboard = () => {
-    // Static data that won't change infinitely
-    const userGrowthData = {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      datasets: [
-        {
-          label: 'New Volunteers',
-          data: [65, 59, 80, 81, 56, 55],
-          backgroundColor: 'rgba(99, 102, 241, 0.6)',
-          borderColor: 'rgba(99, 102, 241, 1)',
-          borderWidth: 1,
-          tension: 0.1 // Smooth line
-        },
-        {
-          label: 'New NGOs',
-          data: [28, 48, 40, 19, 86, 27],
-          backgroundColor: 'rgba(139, 92, 246, 0.6)',
-          borderColor: 'rgba(139, 92, 246, 1)',
-          borderWidth: 1,
-          tension: 0.1 // Smooth line
-        }
-      ]
-    };
-  
-    // Properly structured event status data as bar chart
-    const eventStatusData = {
-      labels: ['Approved', 'Pending', 'Rejected'],
-      datasets: [{
-        label: 'Event Count',
-        data: [120, 45, 30], // Fixed values
-        backgroundColor: [
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(255, 99, 132, 0.6)'
-        ],
-        borderColor: [
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(255, 99, 132, 1)'
-        ],
-        borderWidth: 1
-      }]
-    };
-  
-    // Common chart options
-    const chartOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 1000
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grace: '5%' // Adds padding
-        }
-      },
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        tooltip: {
-          enabled: true
-        }
-      }
-    };
-
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard 
-            title="Active Users" 
-            value={analyticsData.activeUsers} 
-            change="+12%"
-            icon={<FaUsers className="text-indigo-500" />}
-          />
-          <StatCard 
-            title="Events Created" 
-            value={analyticsData.eventsCreated} 
-            change="+24%"
-            icon={<FaRegCalendarCheck className="text-purple-500" />}
-          />
-          <StatCard 
-            title="Volunteer Hours" 
-            value={analyticsData.volunteerHours} 
-            change="+8%"
-            icon={<FaChartLine className="text-blue-500" />}
-          />
-          <StatCard 
-            title="NGO Growth" 
-            value={`${analyticsData.ngoGrowth}%`} 
-            change="+3%"
-            icon={<FaUserShield className="text-teal-500" />}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Growth Chart */}
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">User Growth</h3>
-          <div className="h-[300px]">
-            <Bar 
-              data={userGrowthData} 
-              options={{
-                ...chartOptions,
-                scales: {
-                  ...chartOptions.scales,
-                  y: {
-                    ...chartOptions.scales.y,
-                    title: {
-                      display: true,
-                      text: 'Number of Users'
-                    }
-                  }
-                }
-              }} 
-            />
-          </div>
-        </div>
-
-        {/* Event Status Chart - Now using Bar chart instead of Pie */}
-        <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">Event Status</h3>
-          <div className="h-[300px]">
-          <Bar 
-              data={eventStatusData} 
-              options={{
-                ...chartOptions,
-                indexAxis: 'y', // Horizontal bars
-                scales: {
-                  ...chartOptions.scales,
-                  y: {
-                    ...chartOptions.scales.y,
-                    title: {
-                      display: true,
-                      text: 'Status'
-                    }
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Number of Events'
-                    }
-                  }
-                }
-              }} 
-            />
-             </div>
-        </div>
-      </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {[
-              { id: 1, action: "New NGO registration", time: "5 mins ago", status: "pending" },
-              { id: 2, action: "Event approved", time: "23 mins ago", status: "approved" },
-              { id: 3, action: "Volunteer account created", time: "1 hour ago", status: "completed" },
-              { id: 4, action: "System maintenance", time: "2 hours ago", status: "warning" },
-            ].map(item => (
-              <div key={item.id} className="flex items-center p-3 border-b border-gray-100 last:border-0">
-                <div className={`w-3 h-3 rounded-full mr-3 ${
-                  item.status === 'approved' ? 'bg-green-500' : 
-                  item.status === 'pending' ? 'bg-yellow-500' :
-                  item.status === 'warning' ? 'bg-red-500' : 'bg-blue-500'
-                }`} />
-                <div className="flex-1">
-                  <p className="font-medium">{item.action}</p>
-                  <p className="text-sm text-gray-500">{item.time}</p>
-                </div>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <FaTimes />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const SettingsPanel = () => {
-    return (
-      <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-            <h3 className="font-semibold text-lg mb-4">Appearance</h3>
-            <div className="space-y-4">
-            <ToggleSetting
-  label="Dark Mode"
-  checked={settings.darkMode}
-  onChange={() => toggleSetting('darkMode')}
-  icon={FaCog}  // Pass the component reference, not JSX
-/>
-<ToggleSetting
-  label="Notifications"
-  checked={settings.notifications}
-  onChange={() => toggleSetting('notifications')}
-  icon={FaBell}
-/>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-            <h3 className="font-semibold text-lg mb-4">Approval Settings</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Auto-approve threshold: {settings.autoApproveThreshold}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={settings.autoApproveThreshold}
-                  onChange={handleThresholdChange}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Events with rating above this threshold will be auto-approved
-                </p>
-              </div>
-              <ToggleSetting
-  label="Maintenance Mode"
-  checked={settings.maintenanceMode}
-  onChange={() => toggleSetting('maintenanceMode')}
-  icon={FaUserShield}
-  warning
-/>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">System Status</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <p className="text-sm text-gray-500">Uptime</p>
-              <p className="text-2xl font-bold">{systemStatus.uptime}</p>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <p className="text-sm text-gray-500">Last Backup</p>
-              <p className="text-2xl font-bold">{systemStatus.lastBackup}</p>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <p className="text-sm text-gray-500">Active Sessions</p>
-              <p className="text-2xl font-bold">{systemStatus.activeSessions}</p>
-            </div>
-          </div>
-
-          <div className="flex space-x-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={runSystemBackup}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Run Backup Now
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              View Logs
-            </motion.button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
+  // StatCard, AnalyticsDashboard, SettingsPanel
   const StatCard = ({ title, value, change, icon }) => (
     <motion.div 
       whileHover={{ y: -5 }}
@@ -419,9 +270,7 @@ const AdminDashboard = () => {
         <div>
           <p className="text-sm text-gray-500">{title}</p>
           <p className="text-2xl font-bold mt-1">{value}</p>
-          <p className={`text-sm mt-1 ${
-            change.startsWith('+') ? 'text-green-500' : 'text-red-500'
-          }`}>
+          <p className={`text-sm mt-1 ${change && change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
             {change} from last month
           </p>
         </div>
@@ -432,30 +281,182 @@ const AdminDashboard = () => {
     </motion.div>
   );
 
-  const ToggleSetting = ({ label, checked, onChange, icon: Icon, warning = false }) => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <div className={`w-8 h-8 rounded-lg mr-3 flex items-center justify-center ${
-          warning ? 'bg-red-100 text-red-500' : 'bg-indigo-100 text-indigo-500'
-        }`}>
-          <Icon className="text-lg" />  {/* Render the icon component */}
-        </div>
-        <span className="font-medium">{label}</span>
+  const AnalyticsDashboard = () => (
+    <div>
+      <h2 className="text-xl font-bold mb-4">Analytics Overview</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StatCard title="Active Users" value="1,200" change="+12%" icon={<FaUsers className="text-indigo-500" />} />
+        <StatCard title="Events Created" value="320" change="+24%" icon={<FaRegCalendarCheck className="text-purple-500" />} />
       </div>
-      <label className="relative inline-flex items-center cursor-pointer">
-        <input 
-          type="checkbox" 
-          checked={checked} 
-          onChange={onChange}
-          className="sr-only peer" 
-        />
-        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
-      </label>
+      {/* Add more analytics as needed */}
+    </div>
+  );
+
+  const SettingsPanel = () => (
+    <div>
+      <h2 className="text-xl font-bold mb-4">Settings</h2>
+      <p>Settings content goes here.</p>
     </div>
   );
 
   return (
     <div className="flex min-h-screen bg-gray-50">
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {showEditProfile && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+              <form onSubmit={handleProfileUpdate}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Name</label>
+                    <input
+                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                      value={editForm.name}
+                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      type="email"
+                      className="w-full border px-3 py-2 rounded mb-1 text-gray-800"
+                      value={editForm.email}
+                      onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+              
+                </div>
+                <div className="flex justify-end gap-2 mt-6">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+                    onClick={() => setShowEditProfile(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-purple-600 text-white"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {showChangePassword && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-bold mb-4">Change Password</h2>
+              <form onSubmit={handlePasswordChange}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Current Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.current ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.currentPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, currentPassword: e.target.value }))}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("current")}
+                      >
+                        {showPassword.current ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.new ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.newPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, newPassword: e.target.value }))}
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("new")}
+                      >
+                        {showPassword.new ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Confirm New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword.confirm ? "text" : "password"}
+                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                        value={passwordForm.confirmPassword}
+                        onChange={e => setPasswordForm(f => ({ ...f, confirmPassword: e.target.value }))}
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-2.5 text-gray-500"
+                        onClick={() => togglePasswordVisibility("confirm")}
+                      >
+                        {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-6">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+                    onClick={() => {
+                      setShowChangePassword(false);
+                      setPasswordForm({
+                        currentPassword: "",
+                        newPassword: "",
+                        confirmPassword: ""
+                      });
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-purple-600 text-white"
+                  >
+                    Change Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.aside
         initial={{ x: 0 }}
@@ -465,7 +466,7 @@ const AdminDashboard = () => {
       >
         <div className="flex-1">
           <div className="flex items-center justify-between mb-8">
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               className="flex items-center"
@@ -475,7 +476,7 @@ const AdminDashboard = () => {
                 Admin Portal
               </h2>
             </motion.div>
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="text-gray-400 hover:text-white p-1"
             >
@@ -485,29 +486,30 @@ const AdminDashboard = () => {
 
           <nav className="space-y-1">
             {tabs.map((tab) => (
-              <SidebarLink 
-                key={tab.key} 
-                tabKey={tab.key} 
-                icon={tab.icon} 
-                label={tab.label} 
+              <SidebarLink
+                key={tab.key}
+                tabKey={tab.key}
+                icon={tab.icon}
+                label={tab.label}
               />
             ))}
           </nav>
         </div>
 
-        {/* User & Logout */}
+        {/* Sidebar Footer */}
         <div className="mt-auto pt-4 border-t border-gray-700">
-        <div className="flex items-center mb-4 p-3 rounded-lg bg-gray-700/50 hover:bg-gray-700/80 cursor-pointer transition-colors" 
-     onClick={handleAdminClick}>
-  <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
-    <span className="font-bold">A</span>
-  </div>
-  <div>
-    <p className="font-medium">Admin User</p>
-    <p className="text-xs text-gray-400">Super Admin</p>
-  </div>
-</div>
-          
+          {/* Admin Login Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleAdminLoginClick}
+            className="flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all text-white shadow-lg mb-4"
+          >
+            <RiAdminFill className="mr-2" />
+            <span className="text-sm font-semibold">Admin Login</span>
+          </motion.button>
+
+          {/* Logout Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -521,7 +523,7 @@ const AdminDashboard = () => {
       </motion.aside>
 
       {/* Main Content */}
-      <main 
+      <main
         className={`flex-1 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'ml-72' : 'ml-0'}`}
       >
         <div className="p-8">
@@ -548,6 +550,7 @@ const AdminDashboard = () => {
               </p>
             </div>
             
+            {/* Top right admin profile dropdown */}
             <div className="flex items-center space-x-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -557,6 +560,65 @@ const AdminDashboard = () => {
               >
                 {isSidebarOpen ? "◀" : "▶"}
               </motion.button>
+              
+              {/* Admin profile dropdown */}
+              <div className="relative">
+                <button
+                  className="flex items-center space-x-2 bg-white border rounded-full px-3 py-1 shadow hover:bg-gray-100 transition"
+                  onClick={() => setShowProfileMenu((prev) => !prev)}
+                >
+                  {admin?.avatar ? (
+                    <img src={admin.avatar} alt="Admin" className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <FaUserCircle className="w-8 h-8 text-gray-500" />
+                  )}
+                  <span className="font-medium text-gray-700">{admin?.name || "Admin"}</span>
+                  {showProfileMenu ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+                
+                <AnimatePresence>
+                  {showProfileMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 overflow-hidden border border-gray-200"
+                    >
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        onClick={() => {
+                          setEditForm({
+                            name: admin?.name || "",
+                            email: admin?.email || "",
+                            role: admin?.role || ""
+                          });
+                          setShowEditProfile(true);
+                          setShowProfileMenu(false);
+                        }}
+                      >
+                        <FaUserCog className="text-purple-500" />
+                        <span>Edit Profile</span>
+                      </button>
+                      
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        onClick={() => {
+                          setPasswordForm({
+                            currentPassword: "",
+                            newPassword: "",
+                            confirmPassword: ""
+                          });
+                          setShowChangePassword(true);
+                          setShowProfileMenu(false);
+                        }}
+                      >
+                        <FaLock className="text-purple-500" />
+                        <span>Change Password</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </motion.div>
 
@@ -576,7 +638,7 @@ const AdminDashboard = () => {
                 {activeTab === "approve-events" && <ApproveEvents />}
                 {activeTab === "approved-events" && <ApprovedEvents />}
                 {activeTab === "rejected-events" && <RejectedEvents />}
-                {activeTab === "contact-messages" && <ContactMessages />} {/* Add this line */}
+                {activeTab === "contact-messages" && <ContactMessages />}
                 {activeTab === "analytics" && <AnalyticsDashboard />}
                 {activeTab === "settings" && <SettingsPanel />}
               </div>
@@ -586,7 +648,7 @@ const AdminDashboard = () => {
           {/* Stats Cards */}
           {activeTab !== "analytics" && activeTab !== "settings" && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <motion.div 
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-lg"
               >
@@ -598,8 +660,8 @@ const AdminDashboard = () => {
                   <FaUserShield className="text-4xl opacity-30" />
                 </div>
               </motion.div>
-
-              <motion.div 
+              
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
               >
@@ -611,8 +673,8 @@ const AdminDashboard = () => {
                   <FaUsers className="text-4xl opacity-30" />
                 </div>
               </motion.div>
-
-              <motion.div 
+              
+              <motion.div
                 whileHover={{ y: -5 }}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 text-white shadow-lg"
               >

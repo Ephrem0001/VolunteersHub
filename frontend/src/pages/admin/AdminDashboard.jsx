@@ -139,43 +139,53 @@ const handleProfileUpdate = async (e) => {
     console.error("Update error:", err);
   }
 };
+const handlePasswordChange = async (e) => {
+  e.preventDefault();
+  
+  // Frontend validation
+  if (passwordForm.newPassword.length < 8) {
+    toast.error("Password must be at least 8 characters");
+    return;
+  }
 
-  // Change Password
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error("New passwords don't match!");
-      return;
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    toast.error("New passwords don't match!");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch("http://localhost:5000/api/admin/change-password", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      })
+    });
+
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to change password");
     }
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/admin/change-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          currentPassword: passwordForm.currentPassword,
-          newPassword: passwordForm.newPassword
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("Password changed successfully!");
-        setShowChangePassword(false);
-        setPasswordForm({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: ""
-        });
-      } else {
-        toast.error(data.message || "Failed to change password");
-      }
-    } catch (err) {
-      toast.error("Failed to change password");
-    }
-  };
+
+    toast.success("Password changed successfully!");
+    setShowChangePassword(false);
+    setPasswordForm({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+
+  } catch (err) {
+    toast.error(err.message || "Failed to change password");
+    console.error("Password change error:", err);
+  }
+};
 
   const togglePasswordVisibility = (field) => {
     setShowPassword(prev => ({
@@ -363,106 +373,124 @@ const handleProfileUpdate = async (e) => {
   )}
 </AnimatePresence>
 
-      {/* Change Password Modal */}
-      <AnimatePresence>
-        {showChangePassword && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
-              <h2 className="text-xl font-bold mb-4">Change Password</h2>
-              <form onSubmit={handlePasswordChange}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Current Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword.current ? "text" : "password"}
-                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
-                        value={passwordForm.currentPassword}
-                        onChange={e => setPasswordForm(f => ({ ...f, currentPassword: e.target.value }))}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-2.5 text-gray-500"
-                        onClick={() => togglePasswordVisibility("current")}
-                      >
-                        {showPassword.current ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">New Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword.new ? "text" : "password"}
-                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
-                        value={passwordForm.newPassword}
-                        onChange={e => setPasswordForm(f => ({ ...f, newPassword: e.target.value }))}
-                        required
-                        minLength={6}
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-2.5 text-gray-500"
-                        onClick={() => togglePasswordVisibility("new")}
-                      >
-                        {showPassword.new ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700">Confirm New Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword.confirm ? "text" : "password"}
-                        className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
-                        value={passwordForm.confirmPassword}
-                        onChange={e => setPasswordForm(f => ({ ...f, confirmPassword: e.target.value }))}
-                        required
-                        minLength={6}
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-2.5 text-gray-500"
-                        onClick={() => togglePasswordVisibility("confirm")}
-                      >
-                        {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-6">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded bg-gray-200 text-gray-800"
-                    onClick={() => {
-                      setShowChangePassword(false);
-                      setPasswordForm({
-                        currentPassword: "",
-                        newPassword: "",
-                        confirmPassword: ""
-                      });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded bg-purple-600 text-white"
-                  >
-                    Change Password
-                  </button>
-                </div>
-              </form>
+     <AnimatePresence>
+  {showChangePassword && (
+    <motion.div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-bold mb-4">Change Password</h2>
+        <form onSubmit={handlePasswordChange}>
+          {/* Current Password Field */}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.current ? "text" : "password"}
+                className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  currentPassword: e.target.value
+                }))}
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-2.5 text-gray-500"
+                onClick={() => togglePasswordVisibility("current")}
+              >
+                {showPassword.current ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+
+          {/* New Password Field */}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.new ? "text" : "password"}
+                className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  newPassword: e.target.value
+                }))}
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-2.5 text-gray-500"
+                onClick={() => togglePasswordVisibility("new")}
+              >
+                {showPassword.new ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="mb-6">
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword.confirm ? "text" : "password"}
+                className="w-full border px-3 py-2 rounded mb-1 text-gray-800 pr-10"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm(prev => ({
+                  ...prev,
+                  confirmPassword: e.target.value
+                }))}
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-2.5 text-gray-500"
+                onClick={() => togglePasswordVisibility("confirm")}
+              >
+                {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              type="button"
+              className="px-4 py-2 rounded bg-gray-200 text-gray-800"
+              onClick={() => {
+                setShowChangePassword(false);
+                setPasswordForm({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: ""
+                });
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition"
+            >
+              Change Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
       {/* Sidebar */}
       <motion.aside

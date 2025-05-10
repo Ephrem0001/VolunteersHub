@@ -144,12 +144,12 @@ const handlePasswordChange = async (e) => {
   
   // Frontend validation
   if (passwordForm.newPassword.length < 8) {
-    toast.error("Password must be at least 8 characters");
+    window.alert("Password must be at least 8 characters");
     return;
   }
 
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    toast.error("New passwords don't match!");
+    window.alert("New passwords don't match!");
     return;
   }
 
@@ -170,10 +170,11 @@ const handlePasswordChange = async (e) => {
     const data = await res.json();
     
     if (!res.ok) {
-      throw new Error(data.message || "Failed to change password");
+      window.alert(data.message || "Failed to change password");
+      return;
     }
 
-    toast.success("Password changed successfully!");
+    window.alert("Password changed successfully!");
     setShowChangePassword(false);
     setPasswordForm({
       currentPassword: "",
@@ -182,8 +183,7 @@ const handlePasswordChange = async (e) => {
     });
 
   } catch (err) {
-    toast.error(err.message || "Failed to change password");
-    console.error("Password change error:", err);
+    window.alert(err.message || "Failed to change password");
   }
 };
 
@@ -373,7 +373,7 @@ const handlePasswordChange = async (e) => {
   )}
 </AnimatePresence>
 
-     <AnimatePresence>
+   <AnimatePresence>
   {showChangePassword && (
     <motion.div
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
@@ -413,7 +413,7 @@ const handlePasswordChange = async (e) => {
           {/* New Password Field */}
           <div className="mb-4">
             <label className="block mb-2 text-sm font-medium text-gray-700">
-              New Password
+              New Password (min 8 characters)
             </label>
             <div className="relative">
               <input
@@ -475,6 +475,7 @@ const handlePasswordChange = async (e) => {
                   newPassword: "",
                   confirmPassword: ""
                 });
+                toast.dismiss(); // Clear any existing messages
               }}
             >
               Cancel

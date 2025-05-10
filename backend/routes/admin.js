@@ -52,6 +52,7 @@ router.put('/profile', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
+// In your admin routes file
 router.put('/change-password', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -77,7 +78,7 @@ router.put('/change-password', verifyToken, verifyAdmin, async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Current password is incorrect"
+        message: "Incorrect current password" // Specific message
       });
     }
 
@@ -87,7 +88,7 @@ router.put('/change-password', verifyToken, verifyAdmin, async (req, res) => {
 
     res.json({
       success: true,
-      message: "Password updated successfully"
+      message: "Password changed successfully" // Success message
     });
 
   } catch (err) {

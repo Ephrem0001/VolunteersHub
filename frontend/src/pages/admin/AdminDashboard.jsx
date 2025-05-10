@@ -314,11 +314,9 @@ const handlePasswordChange = async (e) => {
       <p>Settings content goes here.</p>
     </div>
   );
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Edit Profile Modal */}
-      // ...existing code...
 <AnimatePresence>
   {showEditProfile && (
     <motion.div

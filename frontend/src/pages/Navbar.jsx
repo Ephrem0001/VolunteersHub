@@ -249,7 +249,7 @@ const Navbar = () => {
           Join Our Community
         </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
-                Register as an NGO or Volunteer to start making a difference today!
+                Register as an NPO or Volunteer to start making a difference today!
               </p>
               
               <div className="space-y-4">

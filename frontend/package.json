@@ -41,9 +41,9 @@
     "recharts": "^2.15.2",
     "web-vitals": "^2.1.4"
   },
- "scripts": {
-  "start": "set PORT=3000 && react-scripts start",
-"build": "GENERATE_SOURCEMAP=false react-scripts build && cross-env rimraf dist && shx mv build dist",
+"scripts": {
+  "start": "cross-env PORT=3000 react-scripts start",
+  "build": "react-scripts build && cross-env rimraf dist && mv build dist || move build dist",
   "test": "react-scripts test",
   "eject": "react-scripts eject"
 },
@@ -75,5 +75,9 @@
   },
   "resolutions": {
   "react-datepicker": "4.8.0"
+},
+"devDependencies": {
+  "cross-env": "^7.0.3",
+  "rimraf": "^3.0.2"
 }
 }

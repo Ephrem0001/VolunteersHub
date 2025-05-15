@@ -5,19 +5,40 @@ const ApproveEvents = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
- 
-
   const fetchPendingEvents = async () => {
     setLoading(true);
     setError("");
     try {
+      // Log the token being used
+      const token = localStorage.getItem("token");
+      console.log("Fetching pending events with token:", token ? "Token exists" : "No token found");
+      
       const response = await fetch("http://localhost:5000/api/events/pending", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        },
       });
+      
+      // Log response status
+      console.log("Pending events response status:", response.status);
+      
+      if (response.status === 401) {
+        throw new Error("Authentication failed. Please log in again.");
+      }
+      
+      if (response.status === 403) {
+        throw new Error("You don't have permission to access this resource.");
+      }
 
-      if (!response.ok) throw new Error("Failed to fetch pending events");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error response:", errorData);
+        throw new Error(errorData.message || "Failed to fetch pending events");
+      }
 
       const data = await response.json();
+      console.log("Fetched events:", data);
       setEvents(data);
     } catch (error) {
       setError(error.message);
@@ -26,20 +47,22 @@ const ApproveEvents = () => {
       setLoading(false);
     }
   };
-   useEffect(() => {
+  
+  useEffect(() => {
     fetchPendingEvents();
   }, []);
   
   const updateEventStatus = async (id, status, ngoEmail) => {
     try {
+      const token = localStorage.getItem("token");
       const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({}),// <-- send NGO email
+        body: JSON.stringify({}),
       });
   
       if (response.status === 401) {

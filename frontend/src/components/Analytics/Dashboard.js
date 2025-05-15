@@ -368,48 +368,12 @@ const Dashboard = () => {
                   <DashboardIcon fontSize="large" color="primary" />
                   Volunteer Analytics Dashboard
                 </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                  {lastUpdated && `Last updated: ${lastUpdated.toLocaleString()}`}
-                </Typography>
+              
               </Grid>
               <Grid item>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <FormControl size="small" sx={{ minWidth: 120 }}>
-                    <InputLabel>Filter By</InputLabel>
-                    <Select
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                      label="Filter By"
-                    >
-                      <MenuItem value="daily">Daily</MenuItem>
-                      <MenuItem value="weekly">Weekly</MenuItem>
-                      <MenuItem value="monthly">Monthly</MenuItem>
-                      <MenuItem value="yearly">Yearly</MenuItem>
-                    </Select>
-                  </FormControl>
-                  
-                  <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DatePicker
-                      label="Start Date"
-                      value={dateRange[0]}
-                      onChange={(newValue) => handleDateChange(newValue, 0)}
-                      renderInput={(params) => <TextField {...params} size="small" sx={{ width: 150 }} />}
-                    />
-                    <DatePicker
-                      label="End Date"
-                      value={dateRange[1]}
-                      onChange={(newValue) => handleDateChange(newValue, 1)}
-                      renderInput={(params) => <TextField {...params} size="small" sx={{ width: 150 }} />}
-                    />
-                  </LocalizationProvider>
-
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<FilterList />}
-                    sx={{ height: 40 }}
-                  >
-                    Filters
-                  </Button>
+                 
+            
 
                   <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }}>
                     <IconButton 
@@ -608,28 +572,7 @@ const Dashboard = () => {
                 />
               </Grid>
               
-              {user?.role === "ngo" && (
-                <>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <StatCard 
-                      title="My Events" 
-                      value={stats?.myEvents || 42} 
-                      icon={<GroupWork fontSize="large" />}
-                      color="warning"
-                      trend="up"
-                      trendValue="5%"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <StatCard 
-                      title="Upcoming Events" 
-                      value={stats?.myUpcomingEvents || 15} 
-                      icon={<CalendarToday fontSize="large" />}
-                      color="error"
-                    />
-                  </Grid>
-                </>
-              )}
+            
               
               {user?.role === "Admin" && (
                 <>

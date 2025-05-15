@@ -37,7 +37,7 @@ const Navbar = () => {
               <FontAwesomeIcon icon={faHandsHelping} className="text-xl" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              VolunteerHub
+              VolunteersHub
             </span>
           </Link>
         </motion.div>
@@ -249,7 +249,7 @@ const Navbar = () => {
           Join Our Community
         </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
-                Register as an NGO or Volunteer to start making a difference today!
+                Register as an NPOs or Volunteer to start making a difference today!
               </p>
               
               <div className="space-y-4">
@@ -264,7 +264,7 @@ const Navbar = () => {
                 >
                   <span className="relative z-10 flex items-center">
                     <FontAwesomeIcon icon={faHandsHelping} className="w-5 h-5 mr-3" />
-                    NGO Organization
+                    NPOs Organization
                   </span>
                   <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></span>
                 </motion.button>

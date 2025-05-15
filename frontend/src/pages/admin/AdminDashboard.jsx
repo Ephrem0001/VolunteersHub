@@ -84,17 +84,41 @@ const AdminDashboard = () => {
     const fetchAdminProfile = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
+        
         const res = await fetch("http://localhost:5000/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
+        console.log("Admin profile response status:", res.status);
+        
+        if (!res.ok) {
+          console.log("Admin profile fetch failed, using stored user data");
+          // If profile endpoint fails, use localStorage data
+          const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+          if (storedUser && storedUser._id) {
+            console.log("Using stored user data:", storedUser);
+            setAdmin(storedUser);
+            setEditForm({
+              name: storedUser?.name || "",
+              email: storedUser?.email || "",
+              role: storedUser?.role || "admin"
+            });
+            return;
+          }
+          
+          throw new Error("Failed to load admin profile");
+        }
+        
         const data = await res.json();
         setAdmin(data.user);
         setEditForm({
           name: data.user?.name || "",
           email: data.user?.email || "",
-          role: data.user?.role || ""
+          role: data.user?.role || "admin"
         });
       } catch (err) {
+        console.error("Admin profile fetch error:", err);
         toast.error("Failed to load admin profile");
       }
     };
@@ -205,13 +229,7 @@ const handlePasswordChange = async (e) => {
     }, 800);
   };
 
-  const toggleSetting = (setting) => {
-    setSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
-  };
-
+ 
   const handleThresholdChange = (e) => {
     setSettings(prev => ({
       ...prev,
@@ -219,10 +237,7 @@ const handlePasswordChange = async (e) => {
     }));
   };
 
-  const handleAdminLoginClick = () => {
-    navigate('/admin-login');
-  };
-
+ 
   const runSystemBackup = () => {
     setTimeout(() => {
       setSystemStatus(prev => ({
@@ -239,25 +254,25 @@ const handlePasswordChange = async (e) => {
   }, [activeTab]);
 
   const tabs = [
-    { key: "manage-ngo", icon: FaUserShield, label: "Manage NGOs" },
+    { key: "manage-npo", icon: FaUserShield, label: "Manage NPOs" },
     { key: "manage-volunteer", icon: FaUsers, label: "Manage Volunteers" },
     { key: "approve-events", icon: FaRegCalendarCheck, label: "Pending Events" },
     { key: "approved-events", icon: FaCheck, label: "Approved Events" },
     { key: "rejected-events", icon: FaRegCalendarTimes, label: "Rejected Events" },
     { key: "analytics", icon: FaChartLine, label: "Analytics" },
     { key: "contact-messages", icon: FaEnvelope, label: "Contact Messages" },
-    { key: "settings", icon: FaCog, label: "Settings" }
+    
   ];
 
   const tabTitles = {
-    "manage-ngo": "NGO Management",
+    "manage-npo": "NPO Management",
     "manage-volunteer": "Volunteer Management",
     "approve-events": "Pending Event Approvals",
     "approved-events": "Approved Events",
     "rejected-events": "Rejected Events",
     "contact-messages": "Contact Messages",
     "analytics": "System Analytics",
-    "settings": "Admin Settings"
+    
   };
 
   const SidebarLink = ({ tabKey, icon: Icon, label }) => (
@@ -308,12 +323,7 @@ const handlePasswordChange = async (e) => {
     </div>
   );
 
-  const SettingsPanel = () => (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Settings</h2>
-      <p>Settings content goes here.</p>
-    </div>
-  );
+ 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Edit Profile Modal */}
@@ -531,15 +541,7 @@ const handlePasswordChange = async (e) => {
         {/* Sidebar Footer */}
         <div className="mt-auto pt-4 border-t border-gray-700">
           {/* Admin Login Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleAdminLoginClick}
-            className="flex items-center justify-center w-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-3 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all text-white shadow-lg mb-4"
-          >
-            <RiAdminFill className="mr-2" />
-            <span className="text-sm font-semibold">SAdmin Login</span>
-          </motion.button>
+        
           {/* Logout Button */}
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -667,7 +669,6 @@ const handlePasswordChange = async (e) => {
                 {activeTab === "rejected-events" && <RejectedEvents />}
                 {activeTab === "contact-messages" && <ContactMessages />}
                 {activeTab === "analytics" && <AnalyticsDashboard />}
-                {activeTab === "settings" && <SettingsPanel />}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -681,8 +682,8 @@ const handlePasswordChange = async (e) => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm opacity-80">Total NGOs</p>
-                    <p className="text-3xl font-bold">142</p>
+                    <p className="text-sm opacity-80">Total NPOs</p>
+                    <p className="text-3xl font-bold">14</p>
                   </div>
                   <FaUserShield className="text-4xl opacity-30" />
                 </div>

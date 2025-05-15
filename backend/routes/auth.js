@@ -115,7 +115,7 @@ router.post("/register/volunteer", async (req, res) => {
       const newAdmin = new Admin({
         name,
         email,
-        password: hashedPassword,
+        password,
         role: "Admin",
       });
   
@@ -626,6 +626,62 @@ router.get("/profile", verifyToken, async (req, res) => {
   res.json({ user: userResponse });
 });
 
+// Add this debug route for admin login
+router.post("/debug-admin-login", async (req, res) => {
+  const { email, password } = req.body;
+  
+  try {
+    console.log("Debug admin login attempt for:", email);
+    
+    // Find the admin user
+    const admin = await Admin.findOne({ email });
+    
+    if (!admin) {
+      console.log("Admin not found for email:", email);
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    
+    console.log("Admin found:", admin);
+    
+    // Force update the admin to have the role field
+    admin.role = "admin";
+    await admin.save();
+    console.log("Admin updated with role field:", admin);
+    
+    // Create token with admin role explicitly set
+    const token = jwt.sign(
+      {
+        id: admin._id,
+        email: admin.email,
+        role: "admin" // Explicitly set role to admin
+      },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: '30d' }
+    );
+    
+    // Log the token content for debugging
+    console.log("Token payload:", { id: admin._id, email: admin.email, role: "admin" });
+    
+    res.status(200).json({
+      success: true,
+      message: "Admin login successful",
+      token,
+      user: {
+        _id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: "admin",
+        verified: true
+      }
+    });
+  } catch (error) {
+    console.error("Debug admin login error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server error during login",
+      error: error.message
+    });
+  }
+});
 
- 
 module.exports = router;

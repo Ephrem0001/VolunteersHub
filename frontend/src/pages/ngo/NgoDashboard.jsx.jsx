@@ -238,13 +238,7 @@ const NgoDashboard = () => {
       path: "/users/track-volunteers",
       gradient: "from-green-600 to-emerald-600"
     },
-    {
-      icon: <RiTeamFill className="text-4xl text-yellow-400" />,
-      title: "Teams",
-      description: "Organize volunteers into teams",
-      path: "/ngo/teams",
-      gradient: "from-yellow-600 to-amber-600"
-    },
+   
     {
       icon: <IoMdAnalytics className="text-4xl text-red-400" />,
       title: "Analytics",
@@ -335,7 +329,7 @@ const NgoDashboard = () => {
                       <FaUserCircle className="w-10 h-10 text-purple-500" />
                     )}
                     <div>
-                      <h4 className="font-medium text-gray-900">{ngo?.name || "NGO"}</h4>
+                      <h4 className="font-medium text-gray-900">{ngo?.name || "NPOs"}</h4>
                       <p className="text-xs text-gray-500">{ngo?.email || ""}</p>
                     </div>
                   </div>

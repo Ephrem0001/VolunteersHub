@@ -312,33 +312,12 @@ const RegisterVolunteer = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-gray-800 text-gray-400">
-                  Or continue with
+                 continue with us
                 </span>
               </div>
             </motion.div>
 
-            <motion.div
-              className="grid grid-cols-3 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.3 }}
-            >
-              {[
-                { icon: FaFacebook, color: "bg-blue-600 hover:bg-blue-700", label: "Facebook" },
-                { icon: FaTwitter, color: "bg-sky-500 hover:bg-sky-600", label: "Twitter" },
-                { icon: FaGoogle, color: "bg-red-600 hover:bg-red-700", label: "Google" },
-              ].map(({ icon: Icon, color, label }, index) => (
-                <motion.button
-                  key={label}
-                  type="button"
-                  className={`flex items-center justify-center py-2.5 rounded-lg ${color} text-white transition-colors`}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Icon className="text-xl" />
-                </motion.button>
-              ))}
-            </motion.div>
+           
 
             <motion.div
               className="text-center pt-4"

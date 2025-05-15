@@ -672,7 +672,7 @@ const testimonials = [
           <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
           <span className="relative z-10 flex items-center">
             <FontAwesomeIcon icon={faUsers} className="h-6 w-6 mr-2" />
-            Register Your NGO
+            Register Your NPOs
           </span>
           <span className="absolute right-4 group-hover:right-6 transition-all duration-300">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1149,63 +1149,14 @@ const testimonials = [
                   className="inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
                 >
                   <FontAwesomeIcon icon={faUsers} className="h-6 w-6" />
-                  Register Your NGO
-                </Link>
+                  Register Your NPOs                </Link>
               </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Stay Updated</h2>
-            <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
-            <p className="text-lg text-gray-600 mb-8">
-              Subscribe to our newsletter for the latest volunteer opportunities, success stories, and platform updates.
-            </p>
-            <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-grow">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email address"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Subscribing...' : 'Subscribe'}
-                </button>
-              </div>
-              {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
-              {isSubscribed && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-green-600 text-sm"
-                >
-                  Thank you for subscribing! You'll hear from us soon.
-                </motion.p>
-              )}
-            </form>
-          </motion.div>
-        </div>
-      </section>
-
+     
       {/* Contact Section */}
 <section id="contact" className="py-20 bg-gray-50">
   <div className="max-w-7xl mx-auto px-6">

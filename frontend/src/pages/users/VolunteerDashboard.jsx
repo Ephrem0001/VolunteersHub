@@ -311,7 +311,7 @@ useEffect(() => {
               <FaHandsHelping className="text-white text-xl" />
             </motion.div>
             <h1 className="text-2xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-emerald-600">
-              VolunteerHub
+              VolunteersHub
             </h1>
           </div>
           
@@ -474,68 +474,6 @@ useEffect(() => {
             your time and skills to causes that need you most.
           </motion.p>
 
-          {/* User Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8"
-          >
-            {[
-              { 
-                title: "Events Attended", 
-                value: stats.eventsAttended, 
-                icon: <Calendar className="text-blue-500" />,
-                color: "bg-blue-50",
-                textColor: "text-blue-600"
-              },
-              { 
-                title: "Hours Volunteered", 
-                value: stats.hoursVolunteered, 
-                icon: <Clock className="text-green-500" />,
-                color: "bg-green-50",
-                textColor: "text-green-600"
-              },
-              { 
-                title: "Upcoming Events", 
-                value: stats.upcomingEvents, 
-                icon: <Users className="text-purple-500" />,
-                color: "bg-purple-50",
-                textColor: "text-purple-600"
-              },
-              { 
-                title: "Impact Points", 
-                value: stats.impactPoints, 
-                icon: <Award className="text-amber-500" />,
-                color: "bg-amber-50",
-                textColor: "text-amber-600"
-              }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ y: -5 }}
-                className={`${stat.color} p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">{stat.title}</p>
-                    <p className={`text-3xl font-bold ${stat.textColor}`}>{stat.value}</p>
-                  </div>
-                  <div className="p-3 rounded-full bg-white shadow-sm">
-                    {stat.icon}
-                  </div>
-                </div>
-                <motion.div 
-                  className="mt-3 h-1 bg-gray-200 rounded-full overflow-hidden"
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
-                  transition={{ delay: index * 0.1 + 0.8 }}
-                >
-                  <div className={`h-full ${stat.textColor.replace('text', 'bg')} opacity-30`}></div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </motion.div>
 
           {/* Search and Filter Bar */}
           <div className="mt-8 w-full flex flex-col md:flex-row gap-4 items-center justify-center">

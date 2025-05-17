@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Contact = require('../models/Contact');
+const Contact = require('../models/contact');
 const { body, validationResult } = require('express-validator');
 
 // @route   POST api/contact

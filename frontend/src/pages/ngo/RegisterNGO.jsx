@@ -152,7 +152,7 @@ const RegisterNGO = () => {
             <FaHandsHelping className="text-white text-3xl" />
           </motion.div>
           <h2 className="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-            NGO Registration
+            NPOs Registration
           </h2>
           <p className="text-gray-400 mt-2 text-center">
             Join our community of change-makers

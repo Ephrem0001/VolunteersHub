@@ -516,9 +516,7 @@ const handlePasswordChange = async (e) => {
               className="flex items-center"
             >
               <RiAdminFill className="text-3xl text-purple-400 mr-2" />
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-indigo-300">
-                Admin Portal
-              </h2>
+             
             </motion.div>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -540,7 +538,7 @@ const handlePasswordChange = async (e) => {
         </div>
         {/* Sidebar Footer */}
         <div className="mt-auto pt-4 border-t border-gray-700">
-          {/* Admin Login Button */}
+       
         
           {/* Logout Button */}
           <motion.button
@@ -579,7 +577,7 @@ const handlePasswordChange = async (e) => {
                 {activeTab === "rejected-events" && "View rejected events"}
                 {activeTab === "analytics" && "System usage statistics"}
                 {activeTab === "contact-messages" && "View and manage all contact form submissions"}
-                {activeTab === "settings" && "Configure system settings"}
+               
               </p>
             </div>
             {/* Top right admin profile dropdown */}
@@ -695,7 +693,7 @@ const handlePasswordChange = async (e) => {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm opacity-80">Total Volunteers</p>
-                    <p className="text-3xl font-bold">1,842</p>
+                    <p className="text-3xl font-bold">1,2</p>
                   </div>
                   <FaUsers className="text-4xl opacity-30" />
                 </div>

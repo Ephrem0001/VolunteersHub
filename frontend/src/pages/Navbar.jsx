@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faBars, faTimes, faHandsHelping, faUserAlt,faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +15,14 @@ const Navbar = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -24,232 +31,124 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed w-full top-0 z-50 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 backdrop-blur-md py-3 px-4 sm:px-6 border-b border-blue-200">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        {/* Logo/Brand */}
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center mr-4"
-        >
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${
+      isScrolled 
+        ? "bg-gray-900/95 backdrop-blur-sm shadow-lg" 
+        : "bg-transparent"
+    }`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+          {/* Logo */}
           <Link to="/" className="flex items-center">
             <div className="bg-blue-600 text-white p-2 rounded-lg mr-2">
               <FontAwesomeIcon icon={faHandsHelping} className="text-xl" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
               VolunteersHub
             </span>
           </Link>
-        </motion.div>
 
-        {/* Left Side: Search Bar */}
-        <motion.form
-          onSubmit={handleSearch}
-          className="hidden sm:flex items-center bg-white rounded-lg overflow-hidden border border-blue-200 shadow-sm"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-         
-  
-        </motion.form>
-
-        {/* Centered Navigation Links (Hidden on Mobile) */}
-        <div className="hidden md:flex flex-1 justify-center space-x-6">
-          <motion.ul
-            initial="hidden"
-            animate="visible"
-            transition={{ staggerChildren: 0.2 }}
-            className="flex space-x-6"
-          >
-            <motion.li variants={itemVariants}>
-              <Link
-                to="/"
-                className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-3 py-1 rounded-lg transition duration-300 text-sm md:text-base font-medium flex items-center"
-              >
-                <span className="mr-1"></span> Home
-              </Link>
-            </motion.li>
-            <motion.li variants={itemVariants}>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
+            {[
+              { name: "Home", href: "#" },
+              { name: "About", href: "#about" },
+              { name: "Features", href: "#features" },
+              { name: "Contact", href: "#contact" }
+            ].map((item) => (
               <a
-                href="#about"
-                className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-3 py-1 rounded-lg transition duration-300 text-sm md:text-base font-medium flex items-center"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector("#about").scrollIntoView({ behavior: "smooth" });
-                }}
+                key={item.name}
+                href={item.href}
+                className="text-gray-300 hover:text-orange-400 transition-colors duration-300 text-sm lg:text-base"
               >
-                <span className="mr-1"></span> About
+                {item.name}
               </a>
-            </motion.li>
-            <motion.li variants={itemVariants}>
-              <a
-                href="#features"
-                className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-3 py-1 rounded-lg transition duration-300 text-sm md:text-base font-medium flex items-center"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector("#features").scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                <span className="mr-1"></span> Features
-              </a>
-            </motion.li>
-            <motion.li variants={itemVariants}>
-              <a
-                href="#contact"
-                className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-3 py-1 rounded-lg transition duration-300 text-sm md:text-base font-medium flex items-center"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector("#contact").scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                <span className="mr-1"></span> Contact
-              </a>
-            </motion.li>
-          </motion.ul>
-        </div>
+            ))}
+            <Link
+              to="/login"
+              className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2 lg:py-2.5 rounded-lg text-sm lg:text-base font-medium transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 whitespace-nowrap"
+            >
+              Login
+            </Link>
+            <motion.button
+              onClick={() => setShowModal(true)}
+              className="bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2 lg:py-2.5 rounded-lg text-sm lg:text-base font-medium transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/30 whitespace-nowrap"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Register
+            </motion.button>
+          </div>
 
-        {/* Right Side: Buttons (Hidden on Mobile) */}
-        <div className="hidden md:flex items-center space-x-4">
-          <motion.button
-            variants={itemVariants}
-            onClick={() => setShowModal(true)}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 hover:scale-105 transition duration-300 shadow-md text-sm md:text-base font-medium flex items-center"
-          >
-            <FontAwesomeIcon icon={faUserAlt} className="mr-2" />
-            Register
-          </motion.button>
-
-          <motion.button
-            variants={itemVariants}
-            onClick={() => navigate("/login")}
-            className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-5 py-2 rounded-lg hover:from-orange-600 hover:to-pink-600 hover:scale-105 transition duration-300 shadow-md text-sm md:text-base font-medium flex items-center"
-          >
-            <FontAwesomeIcon icon={faSignInAlt} className="mr-2" />
-            Login
-          </motion.button>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="flex items-center space-x-4 sm:hidden">
+          {/* Mobile menu button */}
           <button
-            onClick={() => {
-              alert("Mobile search would open here");
-            }}
-            className="text-blue-700 hover:text-orange-500"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden text-gray-300 hover:text-orange-400 transition-colors duration-300 p-2"
           >
-            <FontAwesomeIcon icon={faSearch} className="text-xl" />
-          </button>
-          <button
-            onClick={toggleMenu}
-            className="text-blue-700 hover:text-orange-500 focus:outline-none"
-          >
-            <FontAwesomeIcon icon={isOpen ? faTimes : faBars} className="text-2xl" />
+            <FontAwesomeIcon icon={isMenuOpen ? faTimes : faBars} className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu (Visible on Mobile) */}
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="absolute top-full left-0 right-0 bg-gradient-to-b from-blue-50 to-indigo-50 backdrop-blur-md px-6 py-4 flex flex-col space-y-4 md:hidden shadow-lg border-t border-blue-200"
-        >
-          <Link
-            to="/"
-            className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-4 py-2 rounded-lg transition duration-300 font-medium flex items-center"
-            onClick={toggleMenu}
-          >
-            <span className="mr-2"></span> Home
-          </Link>
-          <a
-            href="#about"
-            className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-4 py-2 rounded-lg transition duration-300 font-medium flex items-center"
-            onClick={(e) => {
-              e.preventDefault();
-              document.querySelector("#about").scrollIntoView({ behavior: "smooth" });
-              toggleMenu();
-            }}
-          >
-            <span className="mr-2"></span> About
-          </a>
-          <a
-            href="#features"
-            className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-4 py-2 rounded-lg transition duration-300 font-medium flex items-center"
-            onClick={(e) => {
-              e.preventDefault();
-              document.querySelector("#features").scrollIntoView({ behavior: "smooth" });
-              toggleMenu();
-            }}
-          >
-            <span className="mr-2"></span> Features
-          </a>
-          <a
-            href="#contact"
-            className="text-blue-800 hover:text-orange-500 hover:bg-blue-100/50 px-4 py-2 rounded-lg transition duration-300 font-medium flex items-center"
-            onClick={(e) => {
-              e.preventDefault();
-              document.querySelector("#contact").scrollIntoView({ behavior: "smooth" });
-              toggleMenu();
-            }}
-          >
-            <span className="mr-2"></span> Contact
-          </a>
-
-          <div className="flex flex-col space-y-3 pt-2">
-            <button
-              onClick={() => {
-                setShowModal(true);
-                toggleMenu();
-              }}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-300 w-full shadow-md font-medium flex items-center justify-center"
-            >
-              <FontAwesomeIcon icon={faUserAlt} className="mr-2" />
-              Register
-            </button>
-            <button
-              onClick={() => {
-                navigate("/login");
-                toggleMenu();
-              }}
-              className="bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 rounded-lg hover:from-orange-600 hover:to-pink-600 transition duration-300 w-full shadow-md font-medium flex items-center justify-center"
-            >
-              <FontAwesomeIcon icon={faSignInAlt} className="mr-2" />
-              Login
-            </button>
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-gray-900/95 backdrop-blur-sm">
+          <div className="px-3 py-2 space-y-1 sm:px-4">
+            {[
+              { name: "Home", href: "#" },
+              { name: "About", href: "#about" },
+              { name: "Features", href: "#features" },
+              { name: "Contact", href: "#contact" }
+            ].map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="block px-3 py-2 text-gray-300 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.name}
+              </a>
+            ))}
+            <div className="pt-2 space-y-2">
+              <Link
+                to="/login"
+                className="block px-3 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg text-center font-medium transition-all duration-300 text-sm sm:text-base"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <button
+                onClick={() => {
+                  setShowModal(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-3 py-2 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-lg text-center font-medium transition-all duration-300 text-sm sm:text-base"
+              >
+                Register
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
-{showModal && (
-  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-  <motion.div
-  className="bg-gradient-to-br from-white to-blue-50 p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md mx-auto text-center border border-blue-200 relative overflow-hidden"
-  style={{
-    maxHeight: '90vh',
-    overflowY: 'auto',
-    position: 'fixed',
-    top: '50%',
-    left: '30%',
-    transform: 'translate(-50%, -50%)',
-  }}
-  initial={{ scale: 0.9, opacity: 0 }}
-  animate={{ scale: 1, opacity: 1 }}
-  transition={{ type: "spring", damping: 20, stiffness: 300 }}
->
-
+      {showModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <motion.div
+            className="bg-gradient-to-br from-white to-blue-50 p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-md mx-auto text-center border border-blue-200 relative overflow-hidden"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          >
             {/* Decorative elements */}
             <div className="absolute -top-8 -right-8 w-20 h-20 bg-orange-500/10 rounded-full hidden sm:block"></div>
-      <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-blue-500/10 rounded-full hidden sm:block"></div>
-      
-      <div className="relative z-10">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-800 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-          Join Our Community
-        </h2>
+            <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-blue-500/10 rounded-full hidden sm:block"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-800 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+                Join Our Community
+              </h2>
               <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">
-                Register as an NPOs or Volunteer to start making a difference today!
+                Register as an NPO or Volunteer to start making a difference today!
               </p>
               
               <div className="space-y-4">
@@ -297,11 +196,10 @@ const Navbar = () => {
                 </svg>
                 Close
               </motion.button>
-              </div>
-    </motion.div>
-  </div>
-)}
-     
+            </div>
+          </motion.div>
+        </div>
+      )}
     </nav>
   );
 };

@@ -107,10 +107,8 @@ router.post("/register/volunteer", async (req, res) => {
       if (existingAdmin) {
         return res.status(400).json({ message: "Email already registered" });
       }
-  
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-  
       // Create a new Volunteer
       const newAdmin = new Admin({
         name,

@@ -26,7 +26,6 @@ import {
   faChartLine,
   faRocket,
   faSmile,
- 
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebook, faTwitter, faInstagram, faLinkedin } from "@fortawesome/free-brands-svg-icons";
@@ -34,6 +33,35 @@ import { faFacebook, faTwitter, faInstagram, faLinkedin } from "@fortawesome/fre
 const images = [
   { src: bgImage, style: "brightness-75 contrast-125" },
 ];
+
+const COLORS = {
+  primary: {
+    light: 'from-orange-400 to-orange-500',
+    dark: 'from-orange-500 to-orange-600',
+    hover: 'hover:from-orange-500 hover:to-orange-600',
+    text: 'text-orange-500',
+    bg: 'bg-orange-500',
+    border: 'border-orange-500'
+  },
+  secondary: {
+    light: 'from-blue-400 to-blue-500',
+    dark: 'from-blue-500 to-blue-600',
+    hover: 'hover:from-blue-500 hover:to-blue-600',
+    text: 'text-blue-500',
+    bg: 'bg-blue-500',
+    border: 'border-blue-500'
+  },
+  dark: {
+    bg: 'bg-gray-900',
+    text: 'text-gray-900',
+    hover: 'hover:bg-gray-800'
+  },
+  light: {
+    bg: 'bg-white',
+    text: 'text-white',
+    hover: 'hover:bg-gray-50'
+  }
+};
 
 const HomePage = () => {
   // State declarations
@@ -74,11 +102,11 @@ const [formStatus, setFormStatus] = useState({
   ];
 
   const backgroundImages = [
-    "https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    "https://images.unsplash.com/photo-1507679799987-c73779587ccf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+    "https://images.unsplash.com/photo-1541535881962-3bb380b08458?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Hands together
+    "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Food donation
+    "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Community service
+    "https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // People volunteering
+    "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"  // Charity box
   ];
 useEffect(() => {
   const interval = setInterval(() => {
@@ -537,16 +565,10 @@ const testimonials = [
         </motion.button>
       )}
  
-<section className="relative overflow-hidden min-h-screen flex items-center justify-center text-white">
-  {/* Background Slideshow with volunteer/donation-themed images */}
+<section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center text-white px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32">
+  {/* Background Slideshow */}
   <div className="absolute inset-0 overflow-hidden">
-    {[
-      "https://images.unsplash.com/photo-1541535881962-3bb380b08458?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Hands together
-      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Food donation
-      "https://images.unsplash.com/photo-1579684453423-f84349ef60b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // Community service
-      "https://images.unsplash.com/photo-1521791055366-0d553872125f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80", // People volunteering
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"  // Charity box
-    ].map((image, index) => (
+    {backgroundImages.map((image, index) => (
       <motion.div
         key={index}
         className="absolute inset-0 bg-cover bg-center"
@@ -569,71 +591,44 @@ const testimonials = [
     ))}
   </div>
 
-  {/* Content remains the same as before */}
+  {/* Content */}
   <motion.div
     initial={{ opacity: 0, y: 50 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8, ease: "easeOut" }}
-    className="relative z-10 px-6 py-20 text-center max-w-7xl mx-auto"
+    className="relative z-10 w-full max-w-7xl mx-auto text-center mt-16 sm:mt-20"
   >
-    {/* Animated Logo/Badge */}
-    <motion.div
-      className="mx-auto mb-8 w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-yellow-400 shadow-lg flex items-center justify-center"
-      initial={{ scale: 0, rotate: -180 }}
-      animate={{ scale: 1, rotate: 0 }}
-      transition={{ 
-        type: "spring",
-        stiffness: 260,
-        damping: 20,
-        delay: 0.2
-      }}
-    >
-      <FontAwesomeIcon 
-        icon={faHandsHelping} 
-        className="text-white text-4xl" 
-      />
-    </motion.div>
-
     <motion.h1
-      className="text-5xl md:text-7xl font-extrabold mb-6"
+      className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 sm:mb-6"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1, ease: "easeOut" }}
     >
       <span className="block text-gray-300">Welcome to</span>
-      <span className="block mt-2 text-6xl md:text-8xl animate-gradient bg-gradient-to-r from-orange-400 via-yellow-300 to-orange-500 bg-clip-text text-transparent">
+      <span className="block mt-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl animate-gradient bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent">
         VolunteersHub
       </span>
     </motion.h1>
 
-    {/* Typing Effect with Multiple Lines */}
+    {/* Typing Effect */}
     <motion.div
-      className="h-24 mb-8 flex flex-col items-center"
+      className="h-20 sm:h-24 mb-6 sm:mb-8 flex flex-col items-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.5 }}
     >
-      <p className="text-xl md:text-2xl text-gray-300 font-light italic mb-2">
+      <p className="text-lg sm:text-xl md:text-2xl text-gray-300 font-light italic mb-2">
         {typedText}
         <span className="ml-1 inline-block w-1 h-6 bg-orange-400 animate-pulse"></span>
       </p>
-      <p className="text-lg text-orange-200 font-medium">
+      <p className="text-base sm:text-lg text-orange-200 font-medium">
         Empowering communities since 2015
       </p>
     </motion.div>
 
-    <motion.p
-      className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-    >
-      Join a community of <span className="font-semibold text-orange-300">10,000+ volunteers</span> and <span className="font-semibold text-blue-300">500+ organizations</span> 
-    </motion.p>
-
-    {/* CTA Buttons with Enhanced Effects */}
+    {/* CTA Buttons */}
     <motion.div
-      className="flex flex-col sm:flex-row justify-center gap-6 mb-16"
+      className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mb-12 sm:mb-16"
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut", delay: 0.4 }}
@@ -642,20 +637,16 @@ const testimonials = [
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        className="w-full sm:w-auto"
       >
         <Link
           to="/register-volunteer"
-          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 group"
+          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 group w-full sm:w-auto"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
           <span className="relative z-10 flex items-center">
-            <FontAwesomeIcon icon={faHandsHelping} className="h-6 w-6 mr-2" />
+            <FontAwesomeIcon icon={faHandsHelping} className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
             Join as Volunteer
-          </span>
-          <span className="absolute right-4 group-hover:right-6 transition-all duration-300">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
           </span>
         </Link>
       </motion.div>
@@ -664,129 +655,58 @@ const testimonials = [
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        className="w-full sm:w-auto"
       >
         <Link
           to="/register-ngo"
-          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group"
+          className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group w-full sm:w-auto"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
           <span className="relative z-10 flex items-center">
             <FontAwesomeIcon icon={faUsers} className="h-6 w-6 mr-2" />
-            Register Your NPOs
-          </span>
-          <span className="absolute right-4 group-hover:right-6 transition-all duration-300">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
+            Register Your NGO
           </span>
         </Link>
       </motion.div>
     </motion.div>
 
-        {/* Secondary CTA */}
+    {/* Stats Section */}
+    <motion.div
+      className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.6 }}
+    >
+      {[
+        { number: "10K+", label: "Volunteers", icon: faUser, color: COLORS.primary.light },
+        { number: "500+", label: "NGOs", icon: faUsers, color: COLORS.secondary.light },
+        { number: "1M+", label: "Hours Donated", icon: faHeart, color: "from-red-400 to-red-500" },
+        { number: "50+", label: "Cities", icon: faMapMarkerAlt, color: "from-purple-400 to-purple-500" }
+      ].map((stat, index) => (
         <motion.div
-          className="flex flex-col items-center gap-6 mb-16"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          key={index}
+          className="relative bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300 overflow-hidden group"
+          whileHover={{ y: -5 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 + index * 0.1 }}
         >
-          <motion.button
-            onClick={() => setIsVideoModalOpen(true)}
-            className="relative overflow-hidden inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium text-white bg-transparent border-2 border-white rounded-xl hover:bg-white hover:text-gray-900 transition-all duration-300 group"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></span>
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-            </svg>
-            Watch Our Story
-          </motion.button>
-
-          <div className="text-gray-400 text-sm flex items-center gap-2">
-            <span>Trusted by organizations worldwide</span>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg key={star} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-              <span className="text-gray-300 ml-1">4.9/5</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Stats with Interactive Hover Effects */}
-        <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          {[
-            { number: "10K+", label: "Volunteers", icon: faUser, color: "from-orange-400 to-orange-500" },
-            { number: "500+", label: "NGOs", icon: faUsers, color: "from-blue-400 to-blue-500" },
-            { number: "1M+", label: "Hours Donated", icon: faHeart, color: "from-red-400 to-red-500" },
-            { number: "50+", label: "Cities", icon: faMapMarkerAlt, color: "from-purple-400 to-purple-500" }
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              className="relative bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300 overflow-hidden group"
-              whileHover={{ y: -5 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 + index * 0.1 }}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <FontAwesomeIcon icon={stat.icon} className="text-orange-400 text-xl group-hover:text-white transition-colors duration-300" />
-                  <div className="text-3xl md:text-4xl font-bold text-orange-400 group-hover:text-white transition-colors duration-300">
-                    <CountUp end={parseInt(stat.number)} duration={2} delay={0.5 + index * 0.2} />
-                    {stat.number.includes('+') && '+'}
-                  </div>
-                </div>
-                <div className="text-sm md:text-base text-gray-300 group-hover:text-white transition-colors duration-300">{stat.label}</div>
+          <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <FontAwesomeIcon icon={stat.icon} className="text-orange-400 text-lg sm:text-xl group-hover:text-white transition-colors duration-300" />
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-400 group-hover:text-white transition-colors duration-300">
+                <CountUp end={parseInt(stat.number)} duration={2} delay={0.5 + index * 0.2} />
+                {stat.number.includes('+') && '+'}
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Scrolling Arrow Indicator with Pulse Animation */}
-        <motion.div
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 cursor-pointer"
-          animate={{ 
-            y: [0, 10, 0],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{ 
-            duration: 2, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-          onClick={(e) => handleAnchorClick(e, 'about')}
-        >
-          <div className="relative">
-            <svg className="w-10 h-10 text-white hover:text-orange-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-            <motion.div
-              className="absolute inset-0 rounded-full border-2 border-white opacity-0"
-              animate={{
-                scale: [1, 1.5],
-                opacity: [0, 0.3, 0]
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeOut"
-              }}
-            />
+            </div>
+            <div className="text-xs sm:text-sm md:text-base text-gray-300 group-hover:text-white transition-colors duration-300">{stat.label}</div>
           </div>
-          <p className="text-xs text-gray-300 mt-1">Explore More</p>
         </motion.div>
-      </motion.div>
-    </section>
+      ))}
+    </motion.div>
+  </motion.div>
+</section>
 
       {/* About Section */}
       <section id="about" className="py-20 bg-white">
@@ -884,23 +804,23 @@ const testimonials = [
       </section>
 
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="features" ref={featuresRef} className="py-16 sm:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 sm:mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Powerful Features</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Powerful Features</h2>
             <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
               Designed to make volunteering easier, more effective, and more rewarding for everyone involved.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -908,14 +828,17 @@ const testimonials = [
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
                 viewport={{ once: true }}
+                className="bg-white p-6 sm:p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
-                <FeatureCard
-                  icon={feature.icon}
-                  title={feature.title}
-                  description={feature.description}
-                  color={feature.color}
-                  index={index}
-                />
+                <div className="flex items-start gap-4">
+                  <div className="bg-orange-100 p-3 rounded-full text-orange-500">
+                    <FontAwesomeIcon icon={feature.icon} className="text-xl sm:text-2xl" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
+                    <p className="text-gray-600 text-sm sm:text-base">{feature.description}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -1158,33 +1081,34 @@ const testimonials = [
 
      
       {/* Contact Section */}
-<section id="contact" className="py-20 bg-gray-50">
-  <div className="max-w-7xl mx-auto px-6">
+<section id="contact" className="py-16 sm:py-20 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true }}
-      className="text-center mb-16"
+      className="text-center mb-12 sm:mb-16"
     >
-      <h2 className="text-4xl font-bold text-gray-900 mb-4">Get In Touch</h2>
+      <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Get In Touch</h2>
       <div className="w-20 h-1 bg-orange-500 mx-auto mb-6"></div>
-      <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+      <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
         Have questions or want to learn more? We'd love to hear from you.
       </p>
     </motion.div>
 
-    <div className="grid md:grid-cols-2 gap-12">
+    <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
       {/* Contact Form */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         whileInView={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        className="bg-white p-8 rounded-xl shadow-lg"
+        className="bg-white p-6 sm:p-8 rounded-xl shadow-lg"
       >
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">Send us a message</h3>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">          <div>
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Send us a message</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+          <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Name
             </label>
@@ -1192,7 +1116,7 @@ const testimonials = [
               type="text"
               id="name"
               {...register("name", { required: "Name is required" })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
             {errors.name && (
               <p className="mt-1 text-red-500 text-sm">{errors.name.message}</p>
@@ -1213,7 +1137,7 @@ const testimonials = [
                   message: "Invalid email address"
                 }
               })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
             {errors.email && (
               <p className="mt-1 text-red-500 text-sm">{errors.email.message}</p>
@@ -1228,7 +1152,7 @@ const testimonials = [
               type="text"
               id="subject"
               {...register("subject", { required: "Subject is required" })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
             {errors.subject && (
               <p className="mt-1 text-red-500 text-sm">{errors.subject.message}</p>
@@ -1243,57 +1167,20 @@ const testimonials = [
               id="message"
               rows="4"
               {...register("message", { required: "Message is required" })}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             ></textarea>
             {errors.message && (
               <p className="mt-1 text-red-500 text-sm">{errors.message.message}</p>
             )}
           </div>
-          <div className="relative">
+          
           <button
-    type="submit"
-    disabled={isSubmitting}
-    className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
-  >
-    {isSubmitting ? 'Sending...' : 'Send Message'}
-  </button>
-   {/* Tooltip Notification */}
-   <AnimatePresence>
-    {formStatus.show && (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.3 }}
-        className={`absolute -top-12 left-0 right-0 mx-auto w-max px-4 py-2 rounded-md shadow-lg ${
-          formStatus.type === 'error' 
-            ? 'bg-red-500 text-white' 
-            : 'bg-green-500 text-white'
-        }`}
-      >
-        <div className="flex items-center gap-2">
-          {formStatus.type === 'error' ? (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-          <span>{formStatus.message}</span>
-        </div>
-        {/* Tooltip arrow */}
-        <div className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-0 h-0 
-          border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent ${
-            formStatus.type === 'error' 
-              ? 'border-t-red-500' 
-              : 'border-t-green-500'
-          }`}></div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-orange-500 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg hover:bg-orange-600 transition-colors duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Sending...' : 'Send Message'}
+          </button>
         </form>
       </motion.div>
 
@@ -1303,14 +1190,14 @@ const testimonials = [
         whileInView={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        className="space-y-8"
+        className="space-y-6 sm:space-y-8"
       >
-        <div className="bg-white p-8 rounded-xl shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">Contact Information</h3>
-          <div className="space-y-6">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Contact Information</h3>
+          <div className="space-y-4 sm:space-y-6">
             <div className="flex items-start gap-4">
               <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                <FontAwesomeIcon icon={faEnvelope} />
+                <FontAwesomeIcon icon={faEnvelope} className="text-xl" />
               </div>
               <div>
                 <h4 className="text-lg font-semibold text-gray-700">Email</h4>
@@ -1325,7 +1212,7 @@ const testimonials = [
             
             <div className="flex items-start gap-4">
               <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                <FontAwesomeIcon icon={faPhone} />
+                <FontAwesomeIcon icon={faPhone} className="text-xl" />
               </div>
               <div>
                 <h4 className="text-lg font-semibold text-gray-700">Phone</h4>
@@ -1340,7 +1227,7 @@ const testimonials = [
             
             <div className="flex items-start gap-4">
               <div className="bg-orange-100 p-3 rounded-full text-orange-500">
-                <FontAwesomeIcon icon={faMapMarkerAlt} />
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="text-xl" />
               </div>
               <div>
                 <h4 className="text-lg font-semibold text-gray-700">Address</h4>
@@ -1351,9 +1238,9 @@ const testimonials = [
         </div>
 
         {/* Social Media */}
-        <div className="bg-white p-8 rounded-xl shadow-lg">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6">Follow Us</h3>
-          <div className="flex justify-center gap-6">
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">Follow Us</h3>
+          <div className="flex justify-center gap-4 sm:gap-6">
             {[
               { icon: faFacebook, color: "text-blue-600", url: "#" },
               { icon: faTwitter, color: "text-blue-400", url: "#" },
@@ -1380,12 +1267,12 @@ const testimonials = [
 </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+      <footer className="bg-gray-900 text-white py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="text-xl font-bold mb-4">VolunteersHub</h3>
-              <p className="text-gray-400">
+              <p className="text-gray-400 text-sm sm:text-base">
                 Connecting passionate volunteers with organizations making a difference in communities worldwide.
               </p>
             </div>
@@ -1402,7 +1289,7 @@ const testimonials = [
                     <a 
                       href={link.url} 
                       onClick={(e) => handleAnchorClick(e, link.url.substring(1))}
-                      className="text-gray-400 hover:text-orange-400 transition-colors duration-300"
+                      className="text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base"
                     >
                       {link.name}
                     </a>
@@ -1420,7 +1307,10 @@ const testimonials = [
                   { name: "NGO Resources", url: "#" }
                 ].map((link, index) => (
                   <li key={index}>
-                    <a href={link.url} className="text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                    <a 
+                      href={link.url} 
+                      className="text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -1436,7 +1326,10 @@ const testimonials = [
                   { name: "Cookie Policy", url: "#" }
                 ].map((link, index) => (
                   <li key={index}>
-                    <a href={link.url} className="text-gray-400 hover:text-orange-400 transition-colors duration-300">
+                    <a 
+                      href={link.url} 
+                      className="text-gray-400 hover:text-orange-400 transition-colors duration-300 text-sm sm:text-base"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -1444,8 +1337,8 @@ const testimonials = [
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} VolunteersHub. All rights reserved.</p>
+          <div className="pt-6 sm:pt-8 border-t border-gray-800 text-center text-gray-400">
+            <p className="text-sm sm:text-base">&copy; {new Date().getFullYear()} VolunteersHub. All rights reserved.</p>
           </div>
         </div>
       </footer>

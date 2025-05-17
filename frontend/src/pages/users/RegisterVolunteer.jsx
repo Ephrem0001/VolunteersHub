@@ -9,28 +9,100 @@ import {
   FaGoogle,
   FaHandsHelping,
   FaCheckCircle,
-  FaArrowRight
+  FaArrowRight,
+  FaExclamationCircle
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import l from "./l.jpeg"; // Background image
 
 const RegisterVolunteer = () => {
-  const [formData, setFormData] = useState({ 
-    name: "", 
-    email: "", 
-    password: "" 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: ""
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: ""
   });
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  const validateField = (name, value) => {
+    let error = "";
+    
+    switch (name) {
+      case "name":
+        if (!value.trim()) {
+          error = "Name is required";
+        } else if (value.length < 3) {
+          error = "Name must be at least 3 characters";
+        } else if (/\d/.test(value)) {
+          error = "Name cannot contain numbers";
+        }
+        break;
+      case "email":
+        if (!value.trim()) {
+          error = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = "Please enter a valid email address";
+        }
+        break;
+      case "password":
+        if (!value.trim()) {
+          error = "Password is required";
+        } else if (value.length < 8) {
+          error = "Password must be at least 8 characters";
+        } else if (!/[A-Z]/.test(value)) {
+          error = "Password must contain at least one uppercase letter";
+        } else if (!/[a-z]/.test(value)) {
+          error = "Password must contain at least one lowercase letter";
+        } else if (!/[0-9]/.test(value)) {
+          error = "Password must contain at least one number";
+        } else if (!/[^A-Za-z0-9]/.test(value)) {
+          error = "Password must contain at least one special character";
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Validate the field and update errors
+    const error = validateField(name, value);
+    setErrors({ ...errors, [name]: error });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+    
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      newErrors[key] = error;
+      if (error) isValid = false;
+    });
+    
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -62,14 +134,14 @@ const RegisterVolunteer = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Background with overlay */}
+      {/* Background with overlay */} 
       <div className="absolute inset-0 z-0">
         <img 
           src={l} 
           alt="background" 
           className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 to-gray-900/90"></div>
+        /> 
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/80 to-gray-900/90"></div> 
       </div>
 
       {/* Floating decorative elements */}
@@ -214,15 +286,22 @@ const RegisterVolunteer = () => {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Icon className="text-gray-400 group-hover:text-purple-400 transition-colors" />
+                    <Icon className={`text-gray-400 group-hover:text-purple-400 transition-colors ${
+                      errors[name] ? "text-red-400" : ""
+                    }`} />
                   </div>
                   <input
                     type={type}
                     id={name}
                     name={name}
+                    value={formData[name]}
                     onChange={handleChange}
                     required
-                    className="w-full p-3 pl-10 bg-gray-700/50 text-white border border-gray-600 rounded-xl shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all group"
+                    className={`w-full p-3 pl-10 bg-gray-700/50 text-white border ${
+                      errors[name] ? "border-red-500" : "border-gray-600"
+                    } rounded-xl shadow-sm focus:ring-2 ${
+                      errors[name] ? "focus:ring-red-500" : "focus:ring-purple-500"
+                    } focus:border-transparent transition-all group`}
                   />
                   {name === "password" && (
                     <button
@@ -243,6 +322,15 @@ const RegisterVolunteer = () => {
                     </button>
                   )}
                 </div>
+                {errors[name] && (
+                  <motion.p 
+                    className="mt-1 text-sm text-red-400 flex items-center gap-1"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <FaExclamationCircle className="inline" /> {errors[name]}
+                  </motion.p>
+                )}
               </motion.div>
             ))}
 
@@ -312,12 +400,10 @@ const RegisterVolunteer = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-gray-800 text-gray-400">
-                 continue with us
+                  continue with us
                 </span>
               </div>
             </motion.div>
-
-           
 
             <motion.div
               className="text-center pt-4"

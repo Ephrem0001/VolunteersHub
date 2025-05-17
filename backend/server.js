@@ -28,32 +28,45 @@ const admin = require('./routes/admin'); // Adjust path as needed// Middleware c
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
+      'https://volunteershub-754.onrender.com', // ADD THIS
       'https://eventmannagemnt-1.onrender.com',
       'http://localhost:3000'
     ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // <-- PATCH added here
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept',
+    'x-access-token'
+  ],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 204 // 204 is more standard for OPTIONS
 };
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Enable preflight for all routes
-app.options("*", cors());
 app.use(helmet({
   crossOriginResourcePolicy: false,
   contentSecurityPolicy: {
     directives: {
       "default-src": ["'self'"],
-      "connect-src": ["'self'", process.env.FRONTEND_URL || "http://localhost:3000"],
-      "img-src": ["'self'", "data:", "blob:"],
+      "connect-src": [
+        "'self'", 
+        process.env.FRONTEND_URL || "http://localhost:3000",
+        "https://volunteershub-6.onrender.com" // ADD YOUR BACKEND URL
+      ],
+      "img-src": ["'self'", "data:", "blob:", "https://*.render.com"],
       "script-src": ["'self'", "'unsafe-inline'"],
       "style-src": ["'self'", "'unsafe-inline'"]
     }
@@ -95,11 +108,11 @@ app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"), {
     setHeaders: (res) => {
-      res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "http://localhost:3000");
-      res.header("Access-Control-Allow-Methods", "GET");
+      res.setHeader("Access-Control-Allow-Origin", corsOptions.origin);
+      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     }
-  })
-);
+  }
+));
 
 // API routes
 app.use('/api/auth', authRoutes);

@@ -39,7 +39,7 @@ const ManageEvents = () => {
             return;
           }
   
-          const response = await fetch("http://localhost:5000/api/events/my-events", {
+          const response = await fetch("https://volunteershub-6.onrender.com/api/events/my-events", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -133,7 +133,7 @@ const ManageEvents = () => {
           throw new Error("Authentication token missing. Please login again.");
         }
     
-        const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+        const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}`, {
           method: "DELETE",
           headers: {
             'Authorization': `Bearer ${token}`,

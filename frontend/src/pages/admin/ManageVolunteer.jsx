@@ -11,7 +11,7 @@ const ManageVolunteer = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/users", {
+        const response = await fetch("https://volunteershub-6.onrender.com/api/users", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -39,7 +39,7 @@ const ManageVolunteer = () => {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/users/${id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -62,7 +62,7 @@ const ManageVolunteer = () => {
       const token = localStorage.getItem("token");
       const newStatus = currentStatus === "active" ? "blocked" : "active";
       
-      const response = await fetch(`http://localhost:5000/api/volunteers/${id}/status`, {
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/volunteers/${id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

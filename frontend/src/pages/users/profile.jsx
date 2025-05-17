@@ -22,7 +22,7 @@ const Profile = () => {
     const fetchUserProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/auth/profile", {          headers: {
+        const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {          headers: {
             Authorization: `Bearer ${token}`,
           },
         });
@@ -69,7 +69,7 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/auth/profile/update", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -35,7 +35,7 @@ const ContactMessages = () => {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/contact', {
+      const res = await axios.get('https://volunteershub-6.onrender.com/api/contact', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -61,7 +61,7 @@ const ContactMessages = () => {
 
   const deleteMessage = async (id) => {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/contact/${id}`, {
+      const response = await axios.delete(`https://volunteershub-6.onrender.com/api/contact/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

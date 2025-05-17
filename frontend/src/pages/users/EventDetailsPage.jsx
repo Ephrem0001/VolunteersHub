@@ -108,7 +108,7 @@ const EventDetailsPage = () => {
           setCurrentUser({ _id: "123", name: "Guest User" });
           return;
         }
-        const response = await fetch("http://localhost:5000/api/auth/profile", {
+        const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -129,7 +129,7 @@ const EventDetailsPage = () => {
         setSubscribed(false);
         return;
       }
-      const res = await fetch(`http://localhost:5000/api/events/${eventId}/is-registered`, {
+      const res = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/is-registered`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -145,7 +145,7 @@ const EventDetailsPage = () => {
   const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}`);
       if (!response.ok) throw new Error("Failed to fetch event details");
       const data = await response.json();
       setEvent(data);
@@ -208,7 +208,7 @@ const EventDetailsPage = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like/one`, {
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/like/one`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +271,7 @@ const EventDetailsPage = () => {
   
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/comments`, {
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -344,7 +344,7 @@ const EventDetailsPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
+      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

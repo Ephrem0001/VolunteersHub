@@ -21,7 +21,7 @@ const VerifyEmail = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:5000/api/auth/verify-email?token=${token}&email=${email}`,
+          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${email}`,
           {
             headers: {
               'Content-Type': 'application/json'

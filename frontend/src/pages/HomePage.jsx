@@ -390,7 +390,7 @@ const testimonials = [
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/contact',
+        'https://volunteershub-6.onrender.com/api/contact',
         data,
         {
           withCredentials: true,

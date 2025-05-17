@@ -13,7 +13,7 @@ const ApproveEvents = () => {
       const token = localStorage.getItem("token");
       console.log("Fetching pending events with token:", token ? "Token exists" : "No token found");
       
-      const response = await fetch("http://localhost:5000/api/events/pending", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/events/pending", {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json" 
@@ -55,7 +55,7 @@ const ApproveEvents = () => {
   const updateEventStatus = async (id, status, ngoEmail) => {
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
+      const endpoint = `https://volunteershub-6.onrender.com/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: {

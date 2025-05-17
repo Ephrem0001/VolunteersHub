@@ -90,7 +90,7 @@ const CreateEvent = () => {
     }
   
     try {
-      const response = await fetch("http://localhost:5000/api/events/create", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/events/create", {
         method: "POST",
         body: eventData,
         headers: { 

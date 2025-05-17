@@ -96,7 +96,7 @@ const NgoDashboard = () => {
     const fetchNgo = async () => {
       try {
         const token = localStorage.getItem("token");
-       const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+       const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
   method: "PUT",
   headers: {
     "Content-Type": "application/json",
@@ -134,7 +134,7 @@ const NgoDashboard = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+      const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +164,7 @@ const NgoDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+    const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
   method: "PUT",
   headers: {
     "Content-Type": "application/json",
@@ -342,7 +342,7 @@ const NgoDashboard = () => {
   onClick={async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:5000/api/auth/profile", {
+      const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

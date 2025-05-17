@@ -60,7 +60,7 @@ const TrackVolunteers = () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/appliers?eventCreatorId=${userId}`,
+          `https://volunteershub-6.onrender.com/api/appliers?eventCreatorId=${userId}`,
           { signal: controller.signal }
         );
         if (!res.ok) throw new Error("Failed to fetch volunteers");
@@ -77,7 +77,7 @@ const TrackVolunteers = () => {
           let eventDateTime = null;
           if (applier.eventId) {
             try {
-              const eventRes = await fetch(`http://localhost:5000/api/events/my/${applier.eventId}`);
+              const eventRes = await fetch(`https://volunteershub-6.onrender.com/api/events/my/${applier.eventId}`);
               if (eventRes.ok) {
                 const eventData = await eventRes.json();
                 eventName = eventData.name || eventData.title || "";

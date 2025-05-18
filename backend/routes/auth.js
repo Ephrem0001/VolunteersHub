@@ -114,7 +114,7 @@ router.post("/register/volunteer", async (req, res) => {
         name,
         email,
         password,
-        role: "Admin",
+        role: "admin",
       });
   
       await newAdmin.save();

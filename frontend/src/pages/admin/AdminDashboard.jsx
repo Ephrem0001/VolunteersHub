@@ -86,7 +86,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("http://localhost:5000/api/admin/profile", {
+        const res = await fetch("https://volunteershub-project.onrender.com/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         

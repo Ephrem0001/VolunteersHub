@@ -25,10 +25,12 @@ const contactRoutes = require('./routes/contact');
 const applierRoutes = require("./routes/applierRoutes");
 const admin = require('./routes/admin'); // Adjust path as needed// Middleware configuration
 // Replace your current CORS configuration with this:
+// Replace your current CORS configuration with this:
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://volunteershub-754.onrender.com', // ADD THIS
+      'https://volunteershub-project.onrender.com', // Your frontend
+      'https://volunteershub-754.onrender.com',
       'https://eventmannagemnt-1.onrender.com',
       'http://localhost:3000'
     ];
@@ -51,9 +53,10 @@ const corsOptions = {
     'x-access-token'
   ],
   credentials: true,
-  optionsSuccessStatus: 204 // 204 is more standard for OPTIONS
+  optionsSuccessStatus: 204
 };
 
+// Use this single CORS configuration
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Enable preflight for all routes
 app.use(helmet({
@@ -63,8 +66,8 @@ app.use(helmet({
       "default-src": ["'self'"],
       "connect-src": [
         "'self'", 
-        process.env.FRONTEND_URL || "http://localhost:3000",
-        "https://volunteershub-6.onrender.com" // ADD YOUR BACKEND URL
+        "https://volunteershub-project.onrender.com",
+        "https://volunteershub-6.onrender.com"
       ],
       "img-src": ["'self'", "data:", "blob:", "https://*.render.com"],
       "script-src": ["'self'", "'unsafe-inline'"],

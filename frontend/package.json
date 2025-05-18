@@ -70,5 +70,6 @@
   },
   "resolutions": {
     "react-datepicker": "4.8.0"
-  }
+  },
+  "proxy": "https://volunteershub-6.onrender.com"
 }

@@ -386,10 +386,6 @@ router.post("/events/create", verifyToken, verifyNGO, upload.single("image"), as
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
-
-// @route  GET /api/events
-// @desc   Get all events (only approved ones)
-// @access Public
 router.get("/", async (req, res) => {
     try {
         const events = await Event.find({ approved: true });
@@ -400,9 +396,6 @@ router.get("/", async (req, res) => {
     }
 });
 
-// @route  GET /api/events/pending
-// @desc   Get all pending events (for admin approval)
-// @access Admin only
 router.get("/pending", verifyToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {

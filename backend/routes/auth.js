@@ -333,8 +333,10 @@ router.get('/verify-email', async (req, res) => {
       user.verified = true;
       user.verificationToken = undefined;
       await user.save();
-
-      res.redirect(`${process.env.FRONTEND_URL}/login`);
+      // res.redirect(`${process.env.FRONTEND_URL}/login`);
+      // Add validation (example):
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+res.redirect(`${frontendUrl.replace(/\/$/, '')}/login`);
   } catch (error) {
       console.error('Email verification error:', error);
       res.status(500).json({ message: 'Server error during verification.' });

@@ -158,12 +158,28 @@ useEffect(() => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+  try {
+    // Clear localStorage (check if window exists for SSR)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData"); // Optional
+    }
+
     toast.success("Logged out successfully");
+
     setTimeout(() => {
-      window.location.replace("/login");
+      // Use full URL to avoid path issues
+      const loginUrl = window.location.origin + "/login";
+      window.location.href = loginUrl;
+
+      // If using React Router (better for SPAs):
+      // navigate('/login', { replace: true });
     }, 1000);
-  };
+  } catch (error) {
+    console.error("Logout error:", error);
+    toast.error("Failed to logout. Please try again.");
+  }
+};
 
   const handleEventClick = (eventId) => {
     navigate(`/event/${eventId}`);

@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const sendVerificationEmail = async (email, token, name, userType) => {
   // Use FRONTEND_URL from environment variables with fallback
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const baseUrl = process.env.FRONTEND_URL || 'https://volunteershub-project.onrender.com';
   const verificationLink = `${baseUrl}/verify-email?token=${token}&email=${email}`;
   
   const mailOptions = {

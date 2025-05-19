@@ -590,7 +590,7 @@ router.get("/:eventId", async (req, res) => {
     const volunteerCount = await Applier.countDocuments({ eventId: event._id });
     const eventWithFullImageUrl = {
       ...event._doc,
-      image: event.image ? `http://localhost:5000${event.image}` : null,
+      image: event.image ? `https://volunteershub-6.onrender.com${event.image}` : null,
       volunteers: volunteerCount, // <-- This is a number!
     };
     res.status(200).json(eventWithFullImageUrl);

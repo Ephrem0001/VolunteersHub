@@ -336,13 +336,13 @@ const NgoDashboard = () => {
                 </div>
                 
                 <div className="py-1">
-   // ...inside your profile menu...
+
 <button
   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
   onClick={async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:3000/api/auth/profile", {
+      const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

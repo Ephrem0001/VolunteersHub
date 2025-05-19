@@ -14,7 +14,7 @@ router.get("/users", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
+// Add this route to get user count
 // Delete a user
 router.delete("/users/:id", async (req, res) => {
   try {

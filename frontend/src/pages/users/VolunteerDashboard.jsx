@@ -644,42 +644,44 @@ useEffect(() => {
               >
                   <Card className="h-full flex flex-col">
                     {/* Event Image with Favorite Button */}
-                    <div className="relative overflow-hidden h-56">
-                      <div 
-                        className="absolute inset-0 z-10 cursor-pointer" 
-                        onClick={() => handleEventClick(event._id)}
-                        aria-label={`View details for ${event.name}`}
-                      />
-                      
-                      <img
-                        src={event.image || 'https://source.unsplash.com/random/600x400/?volunteer'}
-                        alt={event.name}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                        onError={(e) => {
-                          e.target.src = 'https://source.unsplash.com/random/600x400/?volunteer';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent" />
-                      
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(event._id);
-                        }}
-                        className="absolute top-4 right-4 z-20 bg-white/90 p-2 rounded-full hover:bg-yellow-100 transition-colors shadow-md"
-                      >
-                        <FaStar className={event.isFavorite ? "text-yellow-400" : "text-gray-400"} />
-                      </button>
-                      
-                      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap gap-2">
-                        <div className={`${getCategoryColor(event.category)} px-3 py-1 rounded-full text-xs font-medium flex items-center`}>
-                          {getCategoryIcon(event.category)}
-                          {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
-                        </div>
-                        <div className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                        <FaUsers className="mr-1" /> {event.volunteers} joined                        </div>
-                      </div>
-                    </div>
+                   <div className="relative overflow-hidden h-56">
+  <div 
+    className="absolute inset-0 z-10 cursor-pointer" 
+    onClick={() => handleEventClick(event._id)}
+    aria-label={`View details for ${event.name}`}
+  />
+  
+  <img
+    src={event.image || `http://localhost:5000/images/${event.imageFilename}`}
+    alt={event.name}
+    className="w-full h-full object-cover"
+    onError={(e) => {
+      e.target.onerror = null; // prevent infinite loop
+      e.target.src = 'https://source.unsplash.com/random/600x400/?volunteer,event';
+    }}
+  />
+  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent" />
+  
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleFavorite(event._id);
+    }}
+    className="absolute top-4 right-4 z-20 bg-white/90 p-2 rounded-full hover:bg-yellow-100 transition-colors shadow-md"
+  >
+    <FaStar className={event.isFavorite ? "text-yellow-400" : "text-gray-400"} />
+  </button>
+  
+  <div className="absolute bottom-4 left-4 z-20 flex flex-wrap gap-2">
+    <div className={`${getCategoryColor(event.category)} px-3 py-1 rounded-full text-xs font-medium flex items-center`}>
+      {getCategoryIcon(event.category)}
+      {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+    </div>
+    <div className="bg-gray-800/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
+      <FaUsers className="mr-1" /> {event.volunteers} joined
+    </div>
+  </div>
+</div>
 
                     <motion.div
                   initial={{ opacity: 0 }}

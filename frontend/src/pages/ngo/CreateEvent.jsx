@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCalendarAlt, FaMapMarkerAlt, FaUpload, FaLightbulb, FaImage } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
-import myImage from "./ty.jpg"; // Background image from login file
+import myImage from "./ty.jpg";
 
 const CreateEvent = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    date: "",
+    startDate: "",
+    endDate: "",
     location: "",
     image: null,
+     previewUrl: "" 
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -48,14 +50,18 @@ const CreateEvent = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setFormData({ ...formData, image: file });
-    } else {
-      alert("Please upload a valid image file.");
-    }
-  };
+ const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    setFormData({ 
+      ...formData, 
+      image: file,
+      previewUrl: URL.createObjectURL(file)  // Create preview URL
+    });
+  } else {
+    alert("Please upload a valid image file.");
+  }
+};
 
   const removeImage = () => {
     setFormData({ ...formData, image: null });
@@ -65,13 +71,18 @@ const CreateEvent = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Validate form data
-    if (!formData.name || !formData.description || !formData.date || !formData.location) {
+    if (!formData.name || !formData.description || !formData.startDate || !formData.endDate || !formData.location) {
       alert("Please fill out all required fields.");
       setIsSubmitting(false);
       return;
     }
-  
+
+    if (new Date(formData.endDate) < new Date(formData.startDate)) {
+      alert("End date must be after start date.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       alert("You must be logged in to create an event.");
@@ -79,16 +90,17 @@ const CreateEvent = () => {
       setIsSubmitting(false);
       return;
     }
-  
+
     const eventData = new FormData();
     eventData.append("name", formData.name);
     eventData.append("description", formData.description);
-    eventData.append("date", formData.date);
+    eventData.append("startDate", formData.startDate);
+    eventData.append("endDate", formData.endDate);
     eventData.append("location", formData.location);
     if (formData.image) {
       eventData.append("image", formData.image);
     }
-  
+
     try {
       const response = await fetch("https://volunteershub-6.onrender.com/api/events/create", {
         method: "POST",
@@ -210,67 +222,100 @@ const CreateEvent = () => {
             </div>
 
             {/* Date and Location Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Event Date */}
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
-                <div className="relative flex items-center bg-gray-800 rounded-lg">
-                  <FaCalendarAlt className="absolute left-3 text-blue-400" />
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    required
-                    className="w-full p-3 bg-transparent text-white border-0 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none placeholder-gray-400 pl-10"
-                  />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Event Start Date */}
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-300">Start Date</label>
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
+                  <div className="relative flex items-center bg-gray-800 rounded-lg">
+                    <FaCalendarAlt className="absolute left-3 text-blue-400" />
+                    <input
+                      type="date"
+                      name="startDate"
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      required
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full p-3 bg-transparent text-white border-0 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none placeholder-gray-400 pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event End Date */}
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-300">End Date</label>
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
+                  <div className="relative flex items-center bg-gray-800 rounded-lg">
+                    <FaCalendarAlt className="absolute left-3 text-blue-400" />
+                    <input
+                      type="date"
+                      name="endDate"
+                      value={formData.endDate}
+                      onChange={handleChange}
+                      required
+                      min={formData.startDate || new Date().toISOString().split('T')[0]}
+                      className="w-full p-3 bg-transparent text-white border-0 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none placeholder-gray-400 pl-10"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Event Location */}
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
-                <div className="relative flex items-center bg-gray-800 rounded-lg">
-                  <FaMapMarkerAlt className="absolute left-3 text-yellow-400" />
-                  <input
-                    type="text"
-                    name="location"
-                    placeholder="Event Location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                    list="cities"
-                    className="w-full p-3 bg-transparent text-white border-0 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none placeholder-gray-400 pl-10"
-                  />
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-300">Location</label>
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
+                  <div className="relative flex items-center bg-gray-800 rounded-lg">
+                    <FaMapMarkerAlt className="absolute left-3 text-yellow-400" />
+                    <input
+                      type="text"
+                      name="location"
+                      placeholder="Event Location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      required
+                      list="cities"
+                      className="w-full p-3 bg-transparent text-white border-0 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none placeholder-gray-400 pl-10"
+                    />
+                  </div>
+                  <datalist id="cities">
+                    {ethiopianCities.map((city, index) => (
+                      <option key={index} value={city} />
+                    ))}
+                  </datalist>
                 </div>
-                <datalist id="cities">
-                  {ethiopianCities.map((city, index) => (
-                    <option key={index} value={city} />
-                  ))}
-                </datalist>
               </div>
             </div>
 
             {/* Image Upload */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-300">Event Image (Optional)</label>
-              {formData.image ? (
-                <div className="relative group">
-                  <div className="relative flex items-center justify-center p-4 bg-gray-800 rounded-lg border border-dashed border-gray-600">
-                    <div className="flex flex-col items-center">
-                      <FaImage className="text-2xl text-teal-400 mb-2" />
-                      <span className="text-sm text-gray-300">{formData.image.name}</span>
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="mt-2 flex items-center text-xs text-red-400 hover:text-red-300"
-                      >
-                        <IoMdClose className="mr-1" /> Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
+              
+{formData.image ? (
+  <div className="relative group">
+    <div className="relative flex items-center justify-center p-4 bg-gray-800 rounded-lg border border-dashed border-gray-600">
+      {/* Show actual image preview */}
+      <img 
+        src={formData.previewUrl} 
+        alt="Preview" 
+        className="max-h-48 rounded-md object-contain"
+      />
+      <button
+        type="button"
+        onClick={() => {
+          setFormData({...formData, image: null, previewUrl: ""});
+          URL.revokeObjectURL(formData.previewUrl); // Clean up memory
+        }}
+        className="absolute top-2 right-2 p-1 bg-red-500 rounded-full hover:bg-red-600"
+      >
+        <IoMdClose className="text-white" />
+      </button>
+    </div>
+  </div>
+) :  (
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-rose-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-200"></div>
                   <label className="relative flex flex-col items-center justify-center p-6 bg-gray-800 rounded-lg border border-dashed border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-all">

@@ -29,52 +29,64 @@ const admin = require('./routes/admin'); // Adjust path as needed// Middleware c
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      'https://volunteershub-project.onrender.com', // Your frontend
+      'https://volunteershub-project.onrender.com',
       'https://volunteershub-754.onrender.com',
       'https://eventmannagemnt-1.onrender.com',
       'http://localhost:3000'
     ];
     
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
-    'X-Requested-With', 
-    'Accept',
-    'x-access-token'
-  ],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-access-token'],
   credentials: true,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  exposedHeaders: ['Content-Disposition'] // Add this line
 };
-
 // Use this single CORS configuration
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Enable preflight for all routes
 app.use(helmet({
-  crossOriginResourcePolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Changed from false
   contentSecurityPolicy: {
     directives: {
       "default-src": ["'self'"],
-      "connect-src": [
-        "'self'", 
-        "https://volunteershub-project.onrender.com",
-        "https://volunteershub-6.onrender.com"
-      ],
-      "img-src": ["'self'", "data:", "blob:", "https://*.render.com"],
+      "connect-src": ["'self'", "https://*.render.com"],
+      "img-src": ["'self'", "data:", "blob:", "https://*.render.com", "http://*.render.com"],
       "script-src": ["'self'", "'unsafe-inline'"],
-      "style-src": ["'self'", "'unsafe-inline'"]
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "https://fonts.gstatic.com"]
     }
   }
 }));
+
+app.get('/images/:filename', (req, res) => {
+  const { filename } = req.params;
+  res.sendFile(path.join(__dirname, 'uploads', filename), {
+    headers: {
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cache-Control': 'public, max-age=31536000'
+    }
+  });
+});
+// Add to your routes section
+app.get('/api/users/:id/stats', async (req, res) => {
+  try {
+    const stats = {
+      eventsAttended: Math.floor(Math.random() * 20),
+      hoursVolunteered: Math.floor(Math.random() * 100),
+      upcomingEvents: Math.floor(Math.random() * 5),
+      impactPoints: Math.floor(Math.random() * 500)
+    };
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
 app.use(mongoSanitize());
 app.use(hpp());
 app.use(cookieParser());
@@ -107,15 +119,13 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.static(path.join(__dirname, 'build')));
 // Static File Serving
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
-    setHeaders: (res) => {
-      res.setHeader("Access-Control-Allow-Origin", corsOptions.origin);
-      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-    }
+// Update your static file serving in server.js
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  setHeaders: (res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
   }
-));
+}));
 
 // API routes
 app.use('/api/auth', authRoutes);

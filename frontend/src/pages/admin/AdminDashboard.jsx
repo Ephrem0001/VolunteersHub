@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bar } from "react-chartjs-2";
+import { Pie } from 'react-chartjs-2';
 import { Chart, registerables } from 'chart.js';
 import {
   FaUsers,
@@ -86,7 +87,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("https://volunteershub-project.onrender.com/api/admin/profile", {
+        const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -292,36 +293,222 @@ const handlePasswordChange = async (e) => {
   );
 
   // StatCard, AnalyticsDashboard, SettingsPanel
-  const StatCard = ({ title, value, change, icon }) => (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="bg-white p-6 rounded-lg shadow border border-gray-100"
-    >
-      <div className="flex justify-between">
-        <div>
-          <p className="text-sm text-gray-500">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          <p className={`text-sm mt-1 ${change && change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-            {change} from last month
-          </p>
-        </div>
-        <div className="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-          {icon}
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const AnalyticsDashboard = () => (
+const StatCard = ({ title, value, change, icon }) => (
+  <motion.div 
+    whileHover={{ y: -5 }}
+    className="bg-white p-6 rounded-lg shadow border border-gray-100 flex items-start"
+  >
+    <div className="mr-4 p-3 rounded-lg bg-opacity-20 bg-indigo-100">
+      {icon}
+    </div>
     <div>
-      <h2 className="text-xl font-bold mb-4">Analytics Overview</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard title="Active Users" value="1,200" change="+12%" icon={<FaUsers className="text-indigo-500" />} />
-        <StatCard title="Events Created" value="320" change="+24%" icon={<FaRegCalendarCheck className="text-purple-500" />} />
+      <p className="text-sm text-gray-500 mb-1">{title}</p>
+      <p className="text-2xl font-bold">{value}</p>
+      <p className={`text-sm mt-1 ${change && change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+        {change} from last month
+      </p>
+    </div>
+  </motion.div>
+);
+
+const AnalyticsDashboard = () => {
+  // Sample data for charts
+  const userGrowthData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        label: 'New Users',
+        data: [65, 59, 80, 81, 56, 72],
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        borderColor: 'rgba(99, 102, 241, 1)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }
+    ]
+  };
+
+  const eventStatusData = {
+    labels: ['Approved', 'Pending', 'Rejected'],
+    datasets: [
+      {
+        data: [300, 50, 100],
+        backgroundColor: [
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)'
+        ],
+        borderColor: [
+          'rgba(16, 185, 129, 1)',
+          'rgba(245, 158, 11, 1)',
+          'rgba(239, 68, 68, 1)'
+        ],
+        borderWidth: 1
+      }
+    ]
+  };
+
+  const activityData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        label: 'User Logins',
+        data: [320, 420, 510, 480, 530, 410, 390],
+        backgroundColor: 'rgba(139, 92, 246, 0.5)',
+        borderColor: 'rgba(139, 92, 246, 1)',
+        borderWidth: 2
+      },
+      {
+        label: 'Event Actions',
+        data: [120, 190, 230, 210, 250, 180, 150],
+        backgroundColor: 'rgba(20, 184, 166, 0.5)',
+        borderColor: 'rgba(20, 184, 166, 1)',
+        borderWidth: 2
+      }
+    ]
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Users" 
+          value="1,842" 
+          change="+12.5%" 
+          icon={<FaUsers className="text-indigo-500 text-xl" />} 
+        />
+        <StatCard 
+          title="Active Events" 
+          value="156" 
+          change="+24%" 
+          icon={<FaRegCalendarCheck className="text-green-500 text-xl" />} 
+        />
+        <StatCard 
+          title="Volunteer Hours" 
+          value="3,842" 
+          change="+18.2%" 
+          icon={<FaChartLine className="text-blue-500 text-xl" />} 
+        />
+        <StatCard 
+          title="NGO Growth" 
+          value="+32" 
+          change="+8.5%" 
+          icon={<FaUserShield className="text-purple-500 text-xl" />} 
+        />
       </div>
-      {/* Add more analytics as needed */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
+          <h3 className="font-semibold text-lg mb-4">User Growth</h3>
+          <Bar 
+            data={userGrowthData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }}
+          />
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
+          <h3 className="font-semibold text-lg mb-4">Event Status</h3>
+          <div className="h-64 flex items-center justify-center">
+            <Pie 
+              data={eventStatusData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'right',
+                  },
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
+        <h3 className="font-semibold text-lg mb-4">Weekly Activity</h3>
+        <Bar 
+          data={activityData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
+          <h3 className="font-semibold text-lg mb-4">Top NGOs by Events</h3>
+          <div className="space-y-4">
+            {['Green Earth', 'Helping Hands', 'Community Builders', 'Future Leaders', 'Health First'].map((ngo, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                    <span className="text-purple-600 text-sm font-medium">{index + 1}</span>
+                  </div>
+                  <span className="font-medium">{ngo}</span>
+                </div>
+                <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
+                  {Math.floor(Math.random() * 20) + 5} events
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
+          <h3 className="font-semibold text-lg mb-4">Recent Activities</h3>
+          <div className="space-y-4">
+            {[
+              { action: 'approved', event: 'Community Cleanup', time: '2 hours ago' },
+              { action: 'rejected', event: 'Fundraiser Gala', time: '5 hours ago' },
+              { action: 'new', event: 'Volunteer Registration', time: '1 day ago' },
+              { action: 'updated', event: 'NGO profile', time: '2 days ago' },
+              { action: 'approved', event: 'Food Drive', time: '3 days ago' }
+            ].map((activity, index) => (
+              <div key={index} className="flex items-start">
+                <div className={`p-1 rounded-full mr-3 mt-1 ${
+                  activity.action === 'approved' ? 'bg-green-100 text-green-600' :
+                  activity.action === 'rejected' ? 'bg-red-100 text-red-600' :
+                  'bg-blue-100 text-blue-600'
+                }`}>
+                  {activity.action === 'approved' ? <FaCheck /> : 
+                   activity.action === 'rejected' ? <FaTimes /> : 
+                   <FaRegClipboard />}
+                </div>
+                <div>
+                  <p className="font-medium capitalize">{activity.action} {activity.event}</p>
+                  <p className="text-sm text-gray-500">{activity.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
+};
 
  
   return (

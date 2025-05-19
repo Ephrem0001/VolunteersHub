@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// Remove FaClock from here:
-// Remove the unused FaEnvelope import from your imports:
 import {
   FaThumbsUp,
   FaComment,
@@ -21,7 +19,7 @@ import {
   FaHeart,
   FaRegHeart,
   FaEllipsisH,
-  FaRegClock
+  FaClock
 } from "react-icons/fa";
 import { useCallback } from "react";
 import { FaFacebook, FaTwitter, FaLinkedin, FaInstagram } from 'react-icons/fa';
@@ -61,10 +59,31 @@ const EventDetailsPage = () => {
     days: 0,
     hours: 0,
     minutes: 0,
-    seconds: 0
+    seconds: 0,
+    isEventActive: false,
+    isEventOver: false
+  });
+  const isEventPassed = () => {
+  if (!event?.endDate) return false;
+  const endDate = new Date(event.endDate);
+  const now = new Date();
+  return now > endDate;
+};
+  const [eventDuration, setEventDuration] = useState({
+    days: 0,
+    hours: 0
   });
   const [showFullDescription, setShowFullDescription] = useState(false);
   const commentInputRef = useRef(null);
+
+  const calculateTimeParts = (milliseconds) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    return { days, hours, minutes, seconds };
+  };
 
   const CITY_COORDINATES = {
     "addis ababa": { lat: 9.0054, lng: 38.7636 },
@@ -78,6 +97,7 @@ const EventDetailsPage = () => {
     "arbaminch": { lat: 6.0333, lng: 37.5500 },
     "harar": { lat: 9.3132, lng: 42.1182 }
   };
+  
   const defaultEventContent = {
     about: "This community event brings people together to make a positive impact in our local area. Volunteers will work alongside organizers to accomplish meaningful tasks that benefit the community. Whether you're an experienced volunteer or this is your first time, your participation will make a real difference. The event is open to all ages and skill levels, with tasks available for everyone.",
     requirements: [
@@ -93,13 +113,14 @@ const EventDetailsPage = () => {
       "Any necessary personal medications"
     ]
   };
-  // Sample gallery images (would be replaced with actual event images in a real app)
+
   const sampleGalleryImages = [
     "https://images.unsplash.com/photo-1541178735493-479c1a27ed24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     "https://images.unsplash.com/photo-1527525443983-6e60c75fff46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
   ];
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -122,6 +143,7 @@ const EventDetailsPage = () => {
   
     fetchUserData();
   }, []);
+
   const checkRegistration = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -138,9 +160,6 @@ const EventDetailsPage = () => {
       setSubscribed(false);
     }
   }, [currentUser, eventId]);
-
- 
-
 
   const fetchEventDetails = useCallback(async () => {
     try {
@@ -171,34 +190,137 @@ const EventDetailsPage = () => {
     checkRegistration();
   }, [currentUser, eventId, checkRegistration]);
 
-  useEffect(() => {
-    // Set up interval for countdown timer
-    const timer = setInterval(() => {
-      if (event?.date) {
-        calculateRemainingTime(new Date(event.date));
+  const parseDateSafe = (dateString) => {
+    if (typeof dateString === 'string') {
+      if (dateString.includes('T')) {
+        return new Date(dateString);
       }
-    }, 1000);
+      return new Date(dateString.replace(' at ', ' '));
+    }
+    return dateString;
+  };
 
+  useEffect(() => {
+    if (event?.startDate && event?.endDate) {
+      const start = parseDateSafe(event.startDate);
+      const end = parseDateSafe(event.endDate);
+      const durationMs = end - start;
+      
+      const totalHours = Math.floor(durationMs / (1000 * 60 * 60));
+      const days = Math.floor(totalHours / 24);
+      const hours = totalHours % 24;
+      
+      setEventDuration({ days, hours });
+    }
+  }, [event]);
+
+  useEffect(() => {
+    if (!event?.startDate || !event?.endDate) return;
+
+    const updateTimer = () => {
+      const now = new Date();
+      const start = parseDateSafe(event.startDate);
+      const end = parseDateSafe(event.endDate);
+
+      if (now < start) {
+        const timeParts = calculateTimeParts(start - now);
+        setRemainingTime({
+          ...timeParts,
+          isEventActive: false,
+          isEventOver: false
+        });
+      } else if (now >= start && now <= end) {
+        const timeParts = calculateTimeParts(end - now);
+        setRemainingTime({
+          ...timeParts,
+          isEventActive: true,
+          isEventOver: false
+        });
+      } else {
+        setRemainingTime({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isEventActive: false,
+          isEventOver: true
+        });
+      }
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
     return () => clearInterval(timer);
   }, [event]);
 
-  // ...existing code...
-  const calculateRemainingTime = (eventDate) => {
-    const now = new Date();
-    const eventDateObj = typeof eventDate === "string" ? new Date(eventDate) : eventDate;
-    const diff = eventDateObj - now;
-  
-    if (diff <= 0) {
-      setRemainingTime({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      return;
-    }
-  
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const calculateDuration = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diff = end - start;
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  
-    setRemainingTime({ days, hours, minutes, seconds });
+    
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''}`;
+    }
+    
+    if (hours > 0) {
+      return `${hours} hour${hours > 1 ? 's' : ''} ${minutes > 0 ? `${minutes} minute${minutes > 1 ? 's' : ''}` : ''}`;
+    }
+    
+    return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  };
+
+  const calculateRemainingTime = (startDate, endDate) => {
+    const now = new Date();
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+
+    const timeUntilStart = startDateObj - now;
+    const timeUntilEnd = endDateObj - now;
+
+    if (now < startDateObj) {
+      const totalSeconds = Math.floor(timeUntilStart / 1000);
+      const days = Math.floor(totalSeconds / (3600 * 24));
+      const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+
+      setRemainingTime({ 
+        days, 
+        hours, 
+        minutes, 
+        seconds,
+        isEventActive: false,
+        isEventOver: false
+      });
+    } else if (now >= startDateObj && now <= endDateObj) {
+      const totalSeconds = Math.floor(timeUntilEnd / 1000);
+      const days = Math.floor(totalSeconds / (3600 * 24));
+      const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+
+      setRemainingTime({ 
+        days, 
+        hours, 
+        minutes, 
+        seconds,
+        isEventActive: true,
+        isEventOver: false
+      });
+    } else {
+      setRemainingTime({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isEventActive: false,
+        isEventOver: true
+      });
+    }
   };
 
   const handleLike = async () => {
@@ -296,7 +418,6 @@ const EventDetailsPage = () => {
       setComments("");
       showNotification("Comment added!", "success");
       
-      // Focus back on the comment input after submission
       if (commentInputRef.current) {
         commentInputRef.current.focus();
       }
@@ -418,7 +539,7 @@ const EventDetailsPage = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Africa/Nairobi', // East Africa Time
+      timeZone: 'Africa/Nairobi',
       hour12: true
     };
     return new Date(dateString).toLocaleString('en-US', options) + ' (EAT)';
@@ -438,7 +559,6 @@ const EventDetailsPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen">
-      {/* Back Button */}
       <motion.button 
         onClick={() => navigate(-1)}
         whileHover={{ x: -5 }}
@@ -447,15 +567,20 @@ const EventDetailsPage = () => {
         <FaArrowLeft className="mr-2" />
         Back to Events
       </motion.button>
-
-      {/* Event Header */}
+<div className="flex items-center mb-4 md:mb-0">
+  <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.title}</h1>
+  {isEventPassed() && (
+    <span className="ml-4 bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+      Event Ended
+    </span>
+  )}
+</div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-8 bg-white rounded-xl shadow-lg overflow-hidden"
       >
-        {/* Event Image */}
         {event.image && (
           <div className="relative h-80 w-full overflow-hidden">
             <img 
@@ -522,13 +647,20 @@ const EventDetailsPage = () => {
             </div>
           </div>
           
-          {/* Event Meta */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
             <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
               <FaCalendarAlt className="mr-2 text-blue-500 text-lg" />
               <div>
-                <p className="text-xs text-gray-500">Date</p>
-                <p className="font-medium">{formatDate(event.date)}</p>
+                <p className="text-xs text-gray-500">Start Date</p>
+                <p className="font-medium">{formatDate(event.startDate)}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <FaCalendarAlt className="mr-2 text-blue-500 text-lg" />
+              <div>
+                <p className="text-xs text-gray-500">End Date</p>
+                <p className="font-medium">{formatDate(event.endDate)}</p>
               </div>
             </div>
 
@@ -549,56 +681,52 @@ const EventDetailsPage = () => {
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
-              <FaHeart className="mr-2 text-blue-500 text-lg" />
-              <div>
-                <p className="text-xs text-gray-500">Likes</p>
-                <p className="font-medium">
-                  <CountUp end={likes.length} duration={1} />
-                </p>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-lg mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <FaClock className="mr-2 text-xl" />
+                <span className="font-medium">Time Remaining:</span>
+              </div>
+              <div className="flex space-x-4">
+                {remainingTime.days > 0 && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">
+                      {String(remainingTime.days).padStart(2, '0')}
+                    </div>
+                    <div className="text-xs">Days</div>
+                  </div>
+                )}
+                <div className="text-center">
+                  <div className="text-2xl font-bold">
+                    {String(remainingTime.hours).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs">Hours</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">
+                    {String(remainingTime.minutes).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs">Minutes</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">
+                    {String(remainingTime.seconds).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs">Seconds</div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Countdown Timer */}
-          {remainingTime.days >= 0 && (
-  <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 rounded-lg mb-6">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <FaRegClock className="mr-2 text-xl" />
-        <span className="font-medium">Event starts in:</span>
-      </div>
-      <div className="flex flex-col items-end">
-        <div className="flex space-x-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{remainingTime.days}</div>
-            <div className="text-xs">Days</div>
+          <div className="mt-4 flex items-center text-gray-600">
+            <FaClock className="mr-2" />
+            <span>Duration: {calculateDuration(event.startDate, event.endDate)}</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{remainingTime.hours}</div>
-            <div className="text-xs">Hours</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{remainingTime.minutes}</div>
-            <div className="text-xs">Minutes</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">{remainingTime.seconds}</div>
-            <div className="text-xs">Seconds</div>
-          </div>
-        </div>
-        <div className="mt-2 text-xs text-white/80">
-          {formatDate(event.date)}
-        </div>
-      </div>
-    </div>
-  </div>
-)}  
         </div>
       </motion.div>
 
-      {/* Share Modal */}
       <AnimatePresence>
         {shareOpen && (
           <motion.div
@@ -663,7 +791,6 @@ const EventDetailsPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
         <nav className="flex space-x-8">
           <motion.button
@@ -697,7 +824,6 @@ const EventDetailsPage = () => {
         </nav>
       </div>
 
-      {/* Tab Content */}
       <div className="mb-8">
         {activeTab === "details" && (
           <motion.div
@@ -759,54 +885,62 @@ const EventDetailsPage = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Action Buttons */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleLike}
-                    className={`flex items-center px-4 py-2 rounded-lg ${isLiked ? 'bg-pink-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
-                  >
-                    {isLiked ? (
-                      <FaHeart className="mr-2 text-white" />
-                    ) : (
-                      <FaRegHeart className="mr-2" />
-                    )}
-                    <span>
-                      <CountUp end={likes.length} duration={0.5} />
-                      {likes.length === 1 ? ' Like' : ' Likes'}
-                    </span>
-                  </motion.button>
+              <div className="flex flex-wrap gap-3 mb-4">
+  <motion.button
+    whileHover={{ scale: 1.03 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={handleLike}
+    className={`flex items-center px-4 py-2 rounded-lg ${isLiked ? 'bg-pink-500 text-white shadow-md' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
+  >
+    {isLiked ? (
+      <FaHeart className="mr-2 text-white" />
+    ) : (
+      <FaRegHeart className="mr-2" />
+    )}
+    <span>
+      <CountUp end={likes.length} duration={0.5} />
+      {likes.length === 1 ? ' Like' : ' Likes'}
+    </span>
+  </motion.button>
 
-                  {!subscribed ? (
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleJoin}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg shadow-md hover:shadow-lg"
-                    >
-                      <FaUserPlus className="mr-2" />
-                      Join Event
-                    </motion.button>
-                  ) : (
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      className="flex items-center px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg cursor-default"
-                    >
-                      <FaCheckCircle className="mr-2" />
-                      You're Registered!
-                    </motion.button>
-                  )}
-                </div>
-
+  {!subscribed ? (
+    <motion.button
+      whileHover={{ scale: isEventPassed() ? 1 : 1.03 }}
+      whileTap={{ scale: isEventPassed() ? 1 : 0.97 }}
+      onClick={() => {
+        if (isEventPassed()) {
+          showNotification("This event has already passed", "error");
+        } else {
+          handleJoin();
+        }
+      }}
+      className={`flex items-center px-4 py-2 rounded-lg shadow-md ${
+        isEventPassed()
+          ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+          : "bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:shadow-lg"
+      }`}
+      disabled={isEventPassed()}
+    >
+      <FaUserPlus className="mr-2" />
+      {isEventPassed() ? "Event Ended" : "Join Event"}
+    </motion.button>
+  ) : (
+    <motion.button
+      whileHover={{ scale: 1.03 }}
+      className="flex items-center px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg cursor-default"
+    >
+      <FaCheckCircle className="mr-2" />
+      You're Registered!
+    </motion.button>
+  )}
+</div>
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <span>Event created by: {event.organizer || "Community"}</span>
                   <span>{new Date(event.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
 
-              {/* Map Section */}
               <div className="bg-white p-4 rounded-xl shadow-sm h-64 border border-gray-100">
                 {event.location && CITY_COORDINATES[event.location.toLowerCase().trim()] ? (
                   <iframe
@@ -905,7 +1039,7 @@ const EventDetailsPage = () => {
                   value={comments}
                   onChange={handleCommentChange}
                   placeholder="Share your thoughts about this event..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus                   focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-3"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent mb-3"
                   rows="3"
                   maxLength={500}
                 />
@@ -1032,9 +1166,8 @@ const EventDetailsPage = () => {
         )}
       </div>
 
-      {/* Volunteer Form */}
       <AnimatePresence>
-        {showForm && (
+        {showForm && !isEventPassed() && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1077,8 +1210,7 @@ const EventDetailsPage = () => {
                         <option value="">Select Gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    
                       </select>
                       {formErrors.sex && <p className="text-red-500 text-sm mt-1">{formErrors.sex}</p>}
                     </div>
@@ -1147,28 +1279,39 @@ const EventDetailsPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
-      <motion.div 
-        className="fixed bottom-6 right-6 z-40"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleJoin}
-          className="p-4 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center"
-        >
-          {subscribed ? (
-            <FaCheckCircle className="text-2xl" />
-          ) : (
-            <FaUserPlus className="text-2xl" />
-          )}
-        </motion.button>
-      </motion.div>
+     <motion.div 
+  className="fixed bottom-6 right-6 z-40"
+  initial={{ scale: 0 }}
+  animate={{ scale: 1 }}
+  transition={{ delay: 0.5 }}
+>
+  <motion.button
+    whileHover={{ scale: isEventPassed() ? 1 : 1.05 }}
+    whileTap={{ scale: isEventPassed() ? 1 : 0.95 }}
+    onClick={() => {
+      if (isEventPassed()) {
+        showNotification("This event has already passed", "error");
+      } else {
+        handleJoin();
+      }
+    }}
+    className={`p-4 rounded-full shadow-xl flex items-center justify-center ${
+      isEventPassed()
+        ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+        : "bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:shadow-2xl"
+    }`}
+    disabled={isEventPassed()}
+  >
+    {subscribed ? (
+      <FaCheckCircle className="text-2xl" />
+    ) : isEventPassed() ? (
+      <FaCalendarAlt className="text-2xl" />
+    ) : (
+      <FaUserPlus className="text-2xl" />
+    )}
+  </motion.button>
+</motion.div>
 
-      {/* Scroll to Top Button */}
       <motion.button
         className="fixed bottom-6 left-6 z-40 p-3 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-700"
         whileHover={{ scale: 1.1 }}

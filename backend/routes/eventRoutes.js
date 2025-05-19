@@ -37,28 +37,37 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-  router.post("/create", verifyToken, verifyNGO, isNGO, upload.single("image"), async (req, res) => {
+router.post("/create", verifyToken, verifyNGO, isNGO, upload.single("image"), async (req, res) => {
   try {
-    const { name, description, date, location } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Store image path
+    const { name, description, startDate, endDate, location } = req.body;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Start and end dates are required." });
+    }
+
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     const newEvent = new Event({
       name,
       description,
-      date,
+      startDate,
+      endDate,
       location,
       image: imagePath,
-      status: "pending", // Set status instead of approved: false
-      createdBy: req.user.id, // Assign to the NGO creating it
+      status: "pending",
+      createdBy: req.user.id,
     });
 
     await newEvent.save();
+
     res.status(201).json({ message: "Event created successfully! Pending admin approval." });
+
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+
 router.get('/my-events', verifyToken, async (req, res) => {
   try {
     // ... existing validation code ...
@@ -127,28 +136,39 @@ exports.getMyEvents = async (req, res) => {
 };
 
 
-router.post("/create", verifyToken, verifyNGO, isNGO, upload.single("image"), async (req, res) => {
+router.post("/events/create", verifyToken, verifyNGO, upload.single("image"), async (req, res) => {
   try {
-    const { name, description, date, location } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Store image path
+    const { name, description, startDate, endDate, location } = req.body;
+    
+    // Validate dates
+    if (new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({ message: "End date must be after start date" });
+    }
+
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     const newEvent = new Event({
       name,
       description,
-      date,
+      startDate,
+      endDate,
       location,
       image: imagePath,
-      status: "pending", // Set status instead of approved: false
-      createdBy: req.user.id, // Assign to the NGO creating it
+      status: "pending",
+      createdBy: req.user.id,
     });
 
     await newEvent.save();
-    res.status(201).json({ message: "Event created successfully! Pending admin approval." });
+    res.status(201).json({ 
+      message: "Event created successfully! Pending admin approval.",
+      event: newEvent 
+    });
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
+// Add this route to get event counts
 
 router.get("/", async (req, res) => {
   try {
@@ -164,7 +184,7 @@ router.get("/", async (req, res) => {
  * @route   GET /api/events/pending
  * @desc    Get all pending events (for admin approval)
  * @access  Admin only
- */
+ **/
 router.get("/pending", async (req, res) => {
   try {
     // Get token from Authorization header
@@ -211,7 +231,6 @@ router.get("/pending", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 /**
  * @route   PUT /api/events/approve/:id

@@ -355,26 +355,36 @@ const upload = multer({ storage });
 // @desc   NGO creates an event (default approved: false)
 // @access NGO (protected)
 router.post("/events/create", verifyToken, verifyNGO, upload.single("image"), async (req, res) => {
-    try {
-        const { name, description, date, location } = req.body;
-        const imagePath = req.file ? `/uploads/${req.file.filename}` : null; // Store image path
-
-        const newEvent = new Event({
-            name,
-            description,
-            date,
-            location,
-            image: imagePath,
-            approved: false, // Default to false
-            createdBy: req.user.id, // Assign to the NGO creating it
-        });
-
-        await newEvent.save();
-        res.status(201).json({ message: "Event created successfully! Pending admin approval." });
-    } catch (error) {
-        console.error("Error creating event:", error);
-        res.status(500).json({ message: "Server error. Please try again later." });
+  try {
+    const { name, description, startDate, endDate, location } = req.body;
+    
+    // Validate dates
+    if (new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({ message: "End date must be after start date" });
     }
+
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const newEvent = new Event({
+      name,
+      description,
+      startDate,
+      endDate,
+      location,
+      image: imagePath,
+      status: "pending",
+      createdBy: req.user.id,
+    });
+
+    await newEvent.save();
+    res.status(201).json({ 
+      message: "Event created successfully! Pending admin approval.",
+      event: newEvent 
+    });
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
 });
 
 // @route  GET /api/events

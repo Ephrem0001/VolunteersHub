@@ -370,33 +370,6 @@ const AnalyticsDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Users" 
-          value="1,842" 
-          change="+12.5%" 
-          icon={<FaUsers className="text-indigo-500 text-xl" />} 
-        />
-        <StatCard 
-          title="Active Events" 
-          value="156" 
-          change="+24%" 
-          icon={<FaRegCalendarCheck className="text-green-500 text-xl" />} 
-        />
-        <StatCard 
-          title="Volunteer Hours" 
-          value="3,842" 
-          change="+18.2%" 
-          icon={<FaChartLine className="text-blue-500 text-xl" />} 
-        />
-        <StatCard 
-          title="NGO Growth" 
-          value="+32" 
-          change="+8.5%" 
-          icon={<FaUserShield className="text-purple-500 text-xl" />} 
-        />
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
           <h3 className="font-semibold text-lg mb-4">User Growth</h3>
@@ -457,55 +430,7 @@ const AnalyticsDashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">Top NGOs by Events</h3>
-          <div className="space-y-4">
-            {['Green Earth', 'Helping Hands', 'Community Builders', 'Future Leaders', 'Health First'].map((ngo, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                    <span className="text-purple-600 text-sm font-medium">{index + 1}</span>
-                  </div>
-                  <span className="font-medium">{ngo}</span>
-                </div>
-                <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
-                  {Math.floor(Math.random() * 20) + 5} events
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-          <h3 className="font-semibold text-lg mb-4">Recent Activities</h3>
-          <div className="space-y-4">
-            {[
-              { action: 'approved', event: 'Community Cleanup', time: '2 hours ago' },
-              { action: 'rejected', event: 'Fundraiser Gala', time: '5 hours ago' },
-              { action: 'new', event: 'Volunteer Registration', time: '1 day ago' },
-              { action: 'updated', event: 'NGO profile', time: '2 days ago' },
-              { action: 'approved', event: 'Food Drive', time: '3 days ago' }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-start">
-                <div className={`p-1 rounded-full mr-3 mt-1 ${
-                  activity.action === 'approved' ? 'bg-green-100 text-green-600' :
-                  activity.action === 'rejected' ? 'bg-red-100 text-red-600' :
-                  'bg-blue-100 text-blue-600'
-                }`}>
-                  {activity.action === 'approved' ? <FaCheck /> : 
-                   activity.action === 'rejected' ? <FaTimes /> : 
-                   <FaRegClipboard />}
-                </div>
-                <div>
-                  <p className="font-medium capitalize">{activity.action} {activity.event}</p>
-                  <p className="text-sm text-gray-500">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+     
     </div>
   );
 };
@@ -867,8 +792,8 @@ const AnalyticsDashboard = () => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm opacity-80">Total NPOs</p>
-                    <p className="text-3xl font-bold">14</p>
+                    <p className="text-sm opacity-80"> Manage NPOs</p>
+                    <p className="text-3xl font-bold"></p>
                   </div>
                   <FaUserShield className="text-4xl opacity-30" />
                 </div>
@@ -879,8 +804,8 @@ const AnalyticsDashboard = () => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm opacity-80">Total Volunteers</p>
-                    <p className="text-3xl font-bold">1,2</p>
+                    <p className="text-sm opacity-80">Manage Volunteers</p>
+                    <p className="text-3xl font-bold"></p>
                   </div>
                   <FaUsers className="text-4xl opacity-30" />
                 </div>
@@ -891,8 +816,8 @@ const AnalyticsDashboard = () => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm opacity-80">Pending Events</p>
-                    <p className="text-3xl font-bold">23</p>
+                    <p className="text-sm opacity-80"> Manage Events</p>
+                    <p className="text-3xl font-bold"></p>
                   </div>
                   <FaRegClipboard className="text-4xl opacity-30" />
                 </div>

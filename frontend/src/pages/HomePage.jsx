@@ -179,7 +179,7 @@ useEffect(() => {
 const testimonials = [
   {
     id: 1,
-    name: "Abebe Kebede",
+    name: "Mr.Daniel",
     role: "Volunteer Coordinator",
     content: "VolunteersHub has transformed how we manage our volunteer programs in Addis Ababa. We've connected with hundreds of passionate volunteers through this platform.",
     avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"

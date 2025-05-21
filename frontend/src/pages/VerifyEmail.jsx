@@ -7,47 +7,29 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('verifying');
   const [message, setMessage] = useState('Verifying your email...');
-
-  useEffect(() => {
-    const verifyEmail = async () => {
-      const token = searchParams.get('token');
-      const email = searchParams.get('email');
-
-      if (!token || !email) {
-        setStatus('error');
-        setMessage('Invalid verification link - missing parameters');
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${email}`,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || 'Verification failed');
-        }
-
-        setStatus('success');
-        setMessage(data.message);
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
-        }
-        setTimeout(() => navigate('/login'), 3000);
-      } catch (error) {
-        setStatus('error');
-        setMessage(error.message);
-      }
-    };
-
-    verifyEmail();
-  }, [navigate, searchParams]);
+useEffect(() => {
+  const verifyEmail = async () => {
+    try {
+      const response = await fetch(
+        `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${email}`
+      );
+      
+      const data = await response.json();
+      console.log("API Response:", data); // Debug log
+      
+      if (!response.ok) throw new Error(data.message);
+      
+      // Add this debug check:
+      const dbCheck = await fetch(`/api/users/${email}`);
+      const dbData = await dbCheck.json();
+      console.log("Database Status:", dbData.verified);
+      
+    } catch (error) {
+      console.error("Verification failed:", error);
+    }
+  };
+  verifyEmail();
+}, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

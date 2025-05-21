@@ -76,8 +76,8 @@ router.post("/register/volunteer", async (req, res) => {
     await newVolunteer.save();
 
     // Send verification email (non-blocking)
-    // const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
-const verificationLink = `https://volunteershub-project.onrender.com/#/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+// const verificationLink = `https://volunteershub-project.onrender.com/#/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
     transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
@@ -313,30 +313,46 @@ router.post("/login", async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});
-router.get('/verify-email', async (req, res) => {
+});// In your auth routes (backend)
+router.get("/verify-email", async (req, res) => {
   const { token, email } = req.query;
 
   try {
-      if (!token || !email) {
-          return res.status(400).json({ message: 'Token and email are required.' });
-      }
+    // 1. Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // 2. Find user (check both collections)
+    let user = await Volunteer.findOne({ email: decoded.email }) || 
+               await NGO.findOne({ email: decoded.email });
 
-      const decodedEmail = decodeURIComponent(email);
-      const user = await Volunteer.findOne({ email: decodedEmail, verificationToken: token }) ||
-                   await NGO.findOne({ email: decodedEmail, verificationToken: token });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-      if (!user) {
-          return res.status(400).json({ message: 'Invalid or expired token.' });
-      }
+    // 3. Update verification status
+    user.verified = true;
+    user.verificationToken = undefined; // Clear the token
+    await user.save(); // Make sure to await this!
 
-      user.verified = true;
-      user.verificationToken = undefined;
-      await user.save();
-      res.redirect(`${"https://volunteershub-project.onrender.com"}/login`);
+    // 4. Generate new auth token if needed
+    const authToken = jwt.sign(
+      { userId: user._id, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1d" }
+    );
+
+    res.json({ 
+      message: "Email verified successfully",
+      token: authToken 
+    });
+
   } catch (error) {
-      console.error('Email verification error:', error);
-      res.status(500).json({ message: 'Server error during verification.' });
+    console.error("Verification error:", error);
+    res.status(400).json({ 
+      message: error.message.includes("expired") 
+        ? "Verification link expired" 
+        : "Invalid verification link"
+    });
   }
 });
 

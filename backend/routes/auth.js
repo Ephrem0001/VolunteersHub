@@ -330,6 +330,12 @@ router.post("/login", async (req, res) => {
 });// In your auth routes (backend)
 router.get("/verify-email", async (req, res) => {
   const { token, email } = req.query;
+  console.log("Token:", token);
+  console.log("Email:", email);
+  if (!token || !email) {
+    return res.status(400).json({ message: "Token and email are required" });
+  }
+  
 
   try {
     // 1. Verify JWT token

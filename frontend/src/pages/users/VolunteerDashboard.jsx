@@ -62,7 +62,7 @@ useEffect(() => {
   const fetchUserDataAndStats = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/auth/profile", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -70,7 +70,7 @@ useEffect(() => {
 
       // Fetch stats if user exists
       if (data.user && data.user._id) {
-        const statsRes = await fetch(`http://localhost:5000/api/users/${data.user._id}/stats`, {
+        const statsRes = await fetch(`https://volunteershub-6.onrender.com/api/users/${data.user._id}/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (statsRes.ok) {
@@ -105,7 +105,7 @@ useEffect(() => {
     const fetchApprovedEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/events/approved");
+        const response = await fetch("https://volunteershub-6.onrender.com/api/events/approved");
         if (response.status === 429) {
           // Show a user-friendly error
           toast.error("You are making requests too quickly. Please wait and try again.");

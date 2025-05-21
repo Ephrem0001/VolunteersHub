@@ -9,10 +9,12 @@ const ProfileMenu = ({ user }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.replace("/login");
-  };
-
+   localStorage.removeItem("token");
+   toast.success("Logged out successfully");
+   setTimeout(() => {
+     navigate("/login", { replace: true });
+   }, 1000);
+ };
   const handleProfileClick = () => {
     navigate("/profile");
     setIsOpen(false);

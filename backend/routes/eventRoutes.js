@@ -572,7 +572,7 @@ const eventsWithVolunteerCount = await Promise.all(events.map(async (event) => {
   return {
     ...event._doc,
     volunteers: volunteerCount,
-    image: event.image ? `http://localhost:5000${event.image}` : null,
+    image: event.image ? `https://volunteershub-6.onrender.com${event.image}` : null,
   };
 }));
 res.json(eventsWithVolunteerCount);

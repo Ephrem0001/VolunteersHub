@@ -76,7 +76,7 @@ router.post("/register/volunteer", async (req, res) => {
     await newVolunteer.save();
 
     // Send verification email (non-blocking)
-    const verificationLink = `http://localhost:3000/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
     transporter.sendMail({
       from: process.env.EMAIL_USER,

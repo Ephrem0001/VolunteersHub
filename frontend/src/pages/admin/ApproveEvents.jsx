@@ -8,7 +8,7 @@ const ApproveEvents = ({ events, setEvents, refreshEvents }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
+      const endpoint = `https://volunteershub-6.onrender.com/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: {

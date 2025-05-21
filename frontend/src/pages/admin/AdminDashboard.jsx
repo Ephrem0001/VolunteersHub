@@ -90,7 +90,7 @@ const [events, setEvents] = useState([]);
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("http://localhost:5000/api/admin/profile", {
+        const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -136,7 +136,7 @@ useEffect(() => {
   const fetchAllEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/events", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/events", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -153,7 +153,7 @@ useEffect(() => {
   const fetchPendingEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/events/pending", {
+      const response = await fetch("https://volunteershub-6.onrender.com/api/events/pending", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -173,14 +173,14 @@ useEffect(() => {
       const token = localStorage.getItem("token");
       
       // Fetch users
-      const usersResponse = await fetch("http://localhost:5000/api/users", {
+      const usersResponse = await fetch("https://volunteershub-6.onrender.com/api/users", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const usersData = await usersResponse.json();
       setUsers(usersData);
       
       // Fetch events
-      const eventsResponse = await fetch("http://localhost:5000/api/events", {
+      const eventsResponse = await fetch("https://volunteershub-6.onrender.com/api/events", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const eventsData = await eventsResponse.json();
@@ -192,19 +192,20 @@ useEffect(() => {
 
   fetchData();
 }, []);
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("admin");
-    window.location.replace("/login");
-  };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  toast.success("Logged out successfully");
+  setTimeout(() => {
+    navigate("/login", { replace: true });
+  }, 1000);
+};
 
   // Edit Profile
 // Updated handleProfileUpdate function
 const handleProfileUpdate = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch("http://localhost:5000/api/admin/profile", {
+    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -246,7 +247,7 @@ const handlePasswordChange = async (e) => {
 
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:5000/api/admin/change-password", {
+    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/change-password", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

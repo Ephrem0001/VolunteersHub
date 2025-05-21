@@ -96,7 +96,7 @@ const NgoDashboard = () => {
     const fetchNgo = async () => {
       try {
         const token = localStorage.getItem("token");
-       const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+       const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
   method: "PUT",
   headers: {
     "Content-Type": "application/json",
@@ -125,16 +125,18 @@ const NgoDashboard = () => {
   }, []);
    
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.replace("/login");
-  };
+  localStorage.removeItem("token");
+  toast.success("Logged out successfully");
+  setTimeout(() => {
+    navigate("/login", { replace: true });
+  }, 1000);
+};
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+      const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

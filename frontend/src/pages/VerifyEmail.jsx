@@ -21,8 +21,9 @@ const VerifyEmail = () => {
 
       try {
         const response = await fetch(
-          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${email}`,
+          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
           {
+            method: 'POST', // More appropriate for verification
             headers: {
               'Content-Type': 'application/json'
             }
@@ -35,14 +36,18 @@ const VerifyEmail = () => {
         }
 
         setStatus('success');
-        setMessage(data.message);
+        setMessage(data.message || 'Email verified successfully!');
+        
         if (data.token) {
           localStorage.setItem('authToken', data.token);
         }
-        setTimeout(() => navigate('/login'), 3000);
+
+        // Redirect after delay
+        const redirectTimer = setTimeout(() => navigate('/login'), 3000);
+        return () => clearTimeout(redirectTimer);
       } catch (error) {
         setStatus('error');
-        setMessage(error.message);
+        setMessage(error.message || 'Failed to verify email. The link may have expired.');
       }
     };
 
@@ -71,9 +76,9 @@ const VerifyEmail = () => {
 
         {status === 'error' && (
           <>
-          
-            <h2 className="text-xl font-bold">Verification Successful</h2>
-            {/* <p className="mb-6">{message}</p> */}
+            <FaTimesCircle className="text-red-500 text-4xl mx-auto mb-4" />
+            <h2 className="text-xl font-bold">Verification Failed</h2>
+            <p className="mb-6">{message}</p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => navigate('/login')}
@@ -81,7 +86,12 @@ const VerifyEmail = () => {
               >
                 Go to Login
               </button>
-             
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Try Again
+              </button>
             </div>
           </>
         )}

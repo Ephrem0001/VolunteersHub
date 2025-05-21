@@ -333,7 +333,7 @@ router.get('/verify-email', async (req, res) => {
       user.verified = true;
       user.verificationToken = undefined;
       await user.save();
-      res.redirect(`${"https://volunteershub-6.onrender.com"}/login`);
+      res.redirect(`${"https://volunteershub-project.onrender.com"}/login`);
   } catch (error) {
       console.error('Email verification error:', error);
       res.status(500).json({ message: 'Server error during verification.' });

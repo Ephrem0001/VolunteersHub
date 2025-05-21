@@ -13,58 +13,40 @@ const VerifyEmail = () => {
       const token = searchParams.get('token');
       const email = searchParams.get('email');
 
-      if (!token || !email) {
+     
+if (!token || !email) {
         setStatus('error');
         setMessage('Invalid verification link - missing parameters');
         return;
       }
-
-     try {
-      const response = await fetch(
-        `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
+      try {
+        const response = await fetch(
+          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
           }
-        }
-      );
+        );
 
-      const data = await response.json();
-      console.log('API Response:', {
-        status: response.status,
-        data: data,
-        dbVerified: data.dbVerified // This should match database
-      });
-        
-        if (!response.ok || !data.verified) {
-          throw new Error(data.message || 'Verification failed');
+        const data = await response.json();
+if (!response.ok) {
+          setStatus('error');
+          setMessage(data.message || 'Verification failed');
+          return;
         }
 
         setStatus('success');
         setMessage(data.message);
-        
         if (data.token) {
           localStorage.setItem('authToken', data.token);
         }
 
-        // Verify database status after 1 second
-        setTimeout(async () => {
-          const dbCheck = await fetch(`/api/users/check-verified?email=${encodeURIComponent(email)}`);
-          const dbData = await dbCheck.json();
-          console.log('Database verification status:', dbData.verified);
-        }, 1000);
-
         setTimeout(() => navigate('/login'), 3000);
       } catch (error) {
-      console.error('Full error:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response
-      });
         setStatus('error');
         setMessage(error.message);
-        console.error('Verification error:', error);
       }
     };
 
@@ -81,7 +63,6 @@ const VerifyEmail = () => {
             <p>{message}</p>
           </>
         )}
-
         {status === 'success' && (
           <>
             <FaCheckCircle className="text-green-500 text-4xl mx-auto mb-4" />
@@ -90,7 +71,6 @@ const VerifyEmail = () => {
             <p className="text-sm text-gray-500 mt-4">Redirecting to login...</p>
           </>
         )}
-
         {status === 'error' && (
           <>
             <FaTimesCircle className="text-red-500 text-4xl mx-auto mb-4" />

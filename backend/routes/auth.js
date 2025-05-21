@@ -43,13 +43,12 @@ const router = express.Router();
 router.post("/register/volunteer", async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Basic validation
-  if (!name || !email || !password) {
+  
+if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
-
+  console.log("Registering volunteer:", name, email);
   try {
-    // Check for existing user
     const existingNGO = await NGO.findOne({ email });
     const existingVolunteer = await Volunteer.findOne({ email });
 
@@ -57,40 +56,33 @@ router.post("/register/volunteer", async (req, res) => {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // Generate token
-    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    // Create and save volunteer
     const newVolunteer = new Volunteer({
       name,
       email,
       password: hashedPassword,
       role: "volunteer",
       verified: false,
-      verificationToken: token, // Store token in the database if needed
+      verificationToken,
     });
 
     await newVolunteer.save();
 
-    // Send verification email (non-blocking)
-const verificationLink = `https://volunteershub-project.onrender.com/#/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+
     transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Verify Your Email",
-      html: `<p>Click <a href="${verificationLink}">here</a> to verify your email.</p>`,
+      html: <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>,
     }).catch(err => console.error("Email error:", err));
 
     res.status(201).json({ message: "Registration successful! Check your email." });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ 
-      message: "Server error",
-      error: error.message // Include for debugging (remove in production)
-    });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 

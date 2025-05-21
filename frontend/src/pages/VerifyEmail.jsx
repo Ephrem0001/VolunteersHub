@@ -19,19 +19,23 @@ const VerifyEmail = () => {
         return;
       }
 
-      try {
-        const response = await fetch(
-          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
+     try {
+      const response = await fetch(
+        `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
           }
-        );
+        }
+      );
 
-        const data = await response.json();
-        console.log('Verification response:', data); // Debug log
+      const data = await response.json();
+      console.log('API Response:', {
+        status: response.status,
+        data: data,
+        dbVerified: data.dbVerified // This should match database
+      });
         
         if (!response.ok || !data.verified) {
           throw new Error(data.message || 'Verification failed');
@@ -53,6 +57,11 @@ const VerifyEmail = () => {
 
         setTimeout(() => navigate('/login'), 3000);
       } catch (error) {
+      console.error('Full error:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
         setStatus('error');
         setMessage(error.message);
         console.error('Verification error:', error);

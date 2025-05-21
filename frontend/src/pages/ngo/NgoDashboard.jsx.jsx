@@ -96,7 +96,7 @@ const NgoDashboard = () => {
     const fetchNgo = async () => {
       try {
         const token = localStorage.getItem("token");
-       const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
+       const res = await fetch("http://localhost:5000/api/auth/profile/update", {
   method: "PUT",
   headers: {
     "Content-Type": "application/json",
@@ -134,7 +134,7 @@ const NgoDashboard = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("https://volunteershub-6.onrender.com/api/auth/profile/update", {
+      const res = await fetch("http://localhost:5000/api/auth/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -646,38 +646,6 @@ const NgoDashboard = () => {
             </motion.div>
           ))}
         </motion.div>
-
-        {/* Quick Stats Section */}
-        <motion.section
-          className="mt-16 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-        >
-          <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <MdDashboard className="text-purple-400" /> Quick Stats
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {quickStats.map((stat, index) => (
-              <motion.div
-                key={index}
-                className="bg-gray-700/50 p-4 rounded-xl border border-gray-600/50 hover:border-purple-400/30 transition-all"
-                whileHover={{ y: -3 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.3 + index * 0.1 }}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-gray-600/30 rounded-lg">
-                    {stat.icon}
-                  </div>
-                  <span className="text-2xl font-bold">{stat.value}</span>
-                </div>
-                <p className="text-gray-300 text-sm">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
       </motion.main>
 
       {/* Footer */}

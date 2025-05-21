@@ -1,59 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const ApproveEvents = () => {
-  const [events, setEvents] = useState([]);
+const ApproveEvents = ({ events, setEvents, refreshEvents }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchPendingEvents = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const token = localStorage.getItem("token");
-      console.log("Fetching pending events with token:", token ? "Token exists" : "No token found");
-      
-      const response = await fetch("https://volunteershub-6.onrender.com/api/events/pending", {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json" 
-        },
-      });
-      
-      console.log("Pending events response status:", response.status);
-      
-      if (response.status === 401) {
-        throw new Error("Authentication failed. Please log in again.");
-      }
-      
-      if (response.status === 403) {
-        throw new Error("You don't have permission to access this resource.");
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Error response:", errorData);
-        throw new Error(errorData.message || "Failed to fetch pending events");
-      }
-
-      const data = await response.json();
-      console.log("Fetched events:", data);
-      setEvents(data);
-    } catch (error) {
-      setError(error.message);
-      console.error("Error fetching pending events:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  useEffect(() => {
-    fetchPendingEvents();
-  }, []);
-  
   const updateEventStatus = async (id, status, ngoEmail) => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const endpoint = `https://volunteershub-6.onrender.com/api/events/${status}/${id}`;
+      const endpoint = `http://localhost:5000/api/events/${status}/${id}`;
       const response = await fetch(endpoint, {
         method: "PUT",
         headers: {
@@ -62,24 +17,31 @@ const ApproveEvents = () => {
         },
         body: JSON.stringify({}),
       });
-  
+
       if (response.status === 401) {
         localStorage.removeItem("token");
         window.location.href = "/login";
         return;
       }
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to ${status} event`);
       }
-  
+
       const result = await response.json();
       alert(result.message);
+      
+      // Option 1: Filter locally (faster UI update)
       setEvents(prev => prev.filter(event => event._id !== id));
+      
+      // Option 2: Refresh from server (more accurate)
+      // refreshEvents();
     } catch (error) {
       console.error(`Error ${status} event:`, error);
       alert(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 

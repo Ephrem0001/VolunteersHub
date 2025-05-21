@@ -20,6 +20,10 @@ const EventSchema = new mongoose.Schema({
   }],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "NGO", required: true },
   volunteers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Applier" }], 
+   notificationsSent: {
+    type: [Date],
+    default: []
+  }
 }, { timestamps: true }); // Added timestamps for created/updated at
 
 module.exports = mongoose.model("Event", EventSchema);

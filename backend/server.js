@@ -10,6 +10,8 @@ const hpp = require("hpp");
 const cookieParser = require("cookie-parser");
 const { checkExpiredEvents } = require("./models/Event");
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const { startReminderService } = require('./services/eventReminderService');
+startReminderService();
 // Initialize Express app
 const app = express();
 
@@ -134,6 +136,7 @@ app.use("/api/events", eventsRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/ngo", ngoRoutes);
 app.use("/api", userRoutes);
+
 app.use("/api/volunteer", uprofileRoutes);
 app.use("/api/edit",edit)
 app.use('/api/contact', contactRoutes);

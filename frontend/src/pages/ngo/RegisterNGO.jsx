@@ -199,7 +199,7 @@ const RegisterNGO = () => {
     setRegistrationMessage("");
   
     try {
-      const response = await fetch("https://volunteershub-6.onrender.com/api/auth/register/ngo", {
+      const response = await fetch("http://localhost:5000/api/auth/register/ngo", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -482,15 +482,15 @@ const RegisterNGO = () => {
                 I agree to the{" "}
                 <button
                   type="button"
-                  onClick={() => navigate("/ngo/termsandcondition")}
+                  onClick={() => window.open("/ngo/termsandcondition", "_blank")}
                   className="text-purple-400 hover:text-purple-300 underline"
                 >
                   Terms and Conditions
                 </button>{" "}
                 and{" "}
                 <button
-                  type="button"
-                  onClick={() => navigate("/ngo/privacypolicy")}
+                  type="button"                
+                    onClick={() => window.open("/ngo/privacypolicy", "_blank")}
                   className="text-purple-400 hover:text-purple-300 underline"
                 >
                   Privacy Policy

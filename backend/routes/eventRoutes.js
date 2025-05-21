@@ -800,15 +800,18 @@ router.put('/events/:id', verifyToken, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});
-router.post("/:eventId/register", verifyToken, async (req, res) => {
+});router.post("/:eventId/register", verifyToken, async (req, res) => {
   try {
     const { eventId } = req.params;
     const userId = req.user.id; // should be a string
     const { sex, skills, age } = req.body;
 
     // Always compare as string
-    const alreadyRegistered = await Applier.findOne({ userId: String(userId), eventId: String(eventId) });
+    const alreadyRegistered = await Applier.findOne({ 
+      userId: String(userId), 
+      eventId: String(eventId) 
+    });
+    
     if (alreadyRegistered) {
       return res.status(400).json({ message: "Already registered for this event" });
     }
@@ -819,6 +822,7 @@ router.post("/:eventId/register", verifyToken, async (req, res) => {
     const user = await Volunteer.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Create new applier record
     const applier = new Applier({
       userId: String(user._id),
       name: user.name,
@@ -827,16 +831,103 @@ router.post("/:eventId/register", verifyToken, async (req, res) => {
       age,
       eventId: String(event._id),
       eventCreatorId: event.createdBy,
+      // Add notification preferences (default to true)
+      receiveNotifications: req.body.receiveNotifications !== false
     });
 
     await applier.save();
-    res.status(201).json({ message: "Registered successfully" });
+
+    // Add volunteer to event's volunteers array
+    await Event.findByIdAndUpdate(
+      eventId,
+      { $addToSet: { volunteers: userId } },
+      { new: true }
+    );
+
+    // Send immediate confirmation email
+    try {
+      await sendConfirmationEmail(user, event);
+    } catch (emailError) {
+      console.error("Failed to send confirmation email:", emailError);
+      // Don't fail the registration if email fails
+    }
+
+    res.status(201).json({ 
+      message: "Registered successfully",
+      receiveNotifications: applier.receiveNotifications
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Registration failed" });
   }
 });
-// Like or Unlike an event
+
+// Email sending function
+async function sendConfirmationEmail(user, event) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // or your email service
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: `Confirmation: You're registered for ${event.name}`,
+    html: `
+      <h1>Registration Confirmed</h1>
+      <p>Hello ${user.name},</p>
+      <p>You've successfully registered for the event <strong>${event.name}</strong>.</p>
+      <p><strong>Event Details:</strong></p>
+      <ul>
+        <li>Date: ${event.startDate.toLocaleDateString()}</li>
+        <li>Location: ${event.location}</li>
+      </ul>
+      <p>You'll receive reminders 5 days and 2 days before the event.</p>
+      <p>Best regards,<br>The Event Team</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+// router.post("/:eventId/register", verifyToken, async (req, res) => {
+//   try {
+//     const { eventId } = req.params;
+//     const userId = req.user.id; // should be a string
+//     const { sex, skills, age } = req.body;
+
+//     // Always compare as string
+//     const alreadyRegistered = await Applier.findOne({ userId: String(userId), eventId: String(eventId) });
+//     if (alreadyRegistered) {
+//       return res.status(400).json({ message: "Already registered for this event" });
+//     }
+
+//     const event = await Event.findById(eventId);
+//     if (!event) return res.status(404).json({ message: "Event not found" });
+
+//     const user = await Volunteer.findById(userId);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     const applier = new Applier({
+//       userId: String(user._id),
+//       name: user.name,
+//       sex,
+//       skills,
+//       age,
+//       eventId: String(event._id),
+//       eventCreatorId: event.createdBy,
+//     });
+
+//     await applier.save();
+//     res.status(201).json({ message: "Registered successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Registration failed" });
+//   }
+// });
+
 router.post("/:eventId/like/one", async (req, res) => {
   try {
     const { eventId } = req.params;

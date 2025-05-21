@@ -52,6 +52,8 @@ const AdminDashboard = () => {
     autoApproveThreshold: 50,
     maintenanceMode: false,
   });
+  const [users, setUsers] = useState([]);
+const [events, setEvents] = useState([]);
   const [systemStatus, setSystemStatus] = useState({
     uptime: "99.9%",
     lastBackup: "2 hours ago",
@@ -67,6 +69,7 @@ const AdminDashboard = () => {
     name: "",
     email: "",
   });
+  const [pendingEvents, setPendingEvents] = useState([]);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -87,7 +90,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+        const res = await fetch("http://localhost:5000/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -126,6 +129,69 @@ const AdminDashboard = () => {
     fetchAdminProfile();
   }, []);
 
+  // In AdminDashboard.jsx
+
+// Fetch all events
+useEffect(() => {
+  const fetchAllEvents = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/events", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setEvents(data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+  fetchAllEvents();
+}, []);
+
+// Fetch pending events when tab is active
+useEffect(() => {
+  const fetchPendingEvents = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/events/pending", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setPendingEvents(data);
+    } catch (error) {
+      console.error("Error fetching pending events:", error);
+    }
+  };
+
+  if (activeTab === "approve-events") {
+    fetchPendingEvents();
+  }
+}, [activeTab]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Fetch users
+      const usersResponse = await fetch("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const usersData = await usersResponse.json();
+      setUsers(usersData);
+      
+      // Fetch events
+      const eventsResponse = await fetch("http://localhost:5000/api/events", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const eventsData = await eventsResponse.json();
+      setEvents(eventsData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  fetchData();
+}, []);
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -138,7 +204,7 @@ const AdminDashboard = () => {
 const handleProfileUpdate = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+    const res = await fetch("http://localhost:5000/api/admin/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -180,7 +246,7 @@ const handlePasswordChange = async (e) => {
 
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/change-password", {
+    const res = await fetch("http://localhost:5000/api/admin/change-password", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -275,7 +341,14 @@ const handlePasswordChange = async (e) => {
     "analytics": "System Analytics",
     
   };
-
+{activeTab === "manage-ngo" && <ManageNGO users={users} />}
+{activeTab === "manage-volunteer" && <ManageVolunteer users={users} />}
+{activeTab === "approve-events" && (
+  <ApproveEvents 
+    events={pendingEvents} 
+    setEvents={setPendingEvents} 
+  />
+)}
   const SidebarLink = ({ tabKey, icon: Icon, label }) => (
     <motion.div
       whileHover={{ scale: 1.03 }}
@@ -762,68 +835,80 @@ const AnalyticsDashboard = () => {
           </motion.div>
 
           {/* Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
-            >
-              <div className="p-6">
-                {activeTab === "manage-ngo" && <ManageNGO />}
-                {activeTab === "manage-volunteer" && <ManageVolunteer />}
-                {activeTab === "approve-events" && <ApproveEvents />}
-                {activeTab === "approved-events" && <ApprovedEvents />}
-                {activeTab === "rejected-events" && <RejectedEvents />}
-                {activeTab === "contact-messages" && <ContactMessages />}
-                {activeTab === "analytics" && <AnalyticsDashboard />}
-              </div>
-            </motion.div>
-          </AnimatePresence>
+         {/* Content */}
+<AnimatePresence mode="wait">
+  <motion.div
+    key={activeTab}
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: -20 }}
+    transition={{ duration: 0.3 }}
+    className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+  >
+    <div className="p-6">
+      {activeTab === "manage-ngo" && <ManageNGO users={users} />}
+     {activeTab === "manage-volunteer" && (
+  <ManageVolunteer 
+    users={users} 
+    setUsers={setUsers} 
+  />
+)}
+     
 
+{activeTab === "approve-events" && (
+  <ApproveEvents 
+    events={pendingEvents} 
+    setEvents={setPendingEvents} 
+    refreshEvents={() => {
+      // This will trigger a refetch when events are approved/rejected
+      const token = localStorage.getItem("token");
+      fetch("http://localhost:5000/api/events/pending", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => setPendingEvents(data));
+    }}
+  />
+)}
+
+      {activeTab === "approved-events" && <ApprovedEvents />}
+      {activeTab === "rejected-events" && <RejectedEvents />}
+      {activeTab === "contact-messages" && <ContactMessages />}
+      {activeTab === "analytics" && <AnalyticsDashboard />}
+    </div>
+  </motion.div>
+</AnimatePresence>
           {/* Stats Cards */}
-          {activeTab !== "analytics" && activeTab !== "settings" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-lg"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm opacity-80"> Manage NPOs</p>
-                    <p className="text-3xl font-bold"></p>
-                  </div>
-                  <FaUserShield className="text-4xl opacity-30" />
-                </div>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm opacity-80">Manage Volunteers</p>
-                    <p className="text-3xl font-bold"></p>
-                  </div>
-                  <FaUsers className="text-4xl opacity-30" />
-                </div>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 text-white shadow-lg"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm opacity-80"> Manage Events</p>
-                    <p className="text-3xl font-bold"></p>
-                  </div>
-                  <FaRegClipboard className="text-4xl opacity-30" />
-                </div>
-              </motion.div>
-            </div>
-          )}
+         {/* Stats Cards */}
+{activeTab !== "analytics" && activeTab !== "settings" && (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-lg"
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-sm opacity-80">Total NPOs</p>
+          <p className="text-3xl font-bold">{users.filter(user => user.role === 'ngo').length}</p>
+        </div>
+        <FaUserShield className="text-4xl opacity-30" />
+      </div>
+    </motion.div>
+    <motion.div
+      whileHover={{ y: -5 }}
+      className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-sm opacity-80">Total Volunteers</p>
+          <p className="text-3xl font-bold">{users.filter(user => user.role === 'volunteer').length}</p>
+        </div>
+        <FaUsers className="text-4xl opacity-30" />
+      </div>
+    </motion.div>
+
+  </div>
+)}
         </div>
       </main>
     </div>

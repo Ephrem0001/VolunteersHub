@@ -7,7 +7,11 @@ const applierSchema = new mongoose.Schema({
   skills: { type: String, required: true },
   age: { type: Number, required: true },
   eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
-  eventCreatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'NGO', required: true }, // <-- FIXED
-});
+  eventCreatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'NGO', required: true },
+  receiveNotifications: {
+    type: Boolean,
+    default: true
+  } // <-- FIXED
+}, { timestamps: true });
 
 module.exports = mongoose.model("Applier", applierSchema);

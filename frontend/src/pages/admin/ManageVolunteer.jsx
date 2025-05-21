@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 
-const ManageVolunteer = () => {
-  const [users, setUsers] = useState([]);
+const ManageVolunteer = ({ users, setUsers }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   // Fetch users from the backend
   useEffect(() => {
     const fetchUsers = async () => {
@@ -32,8 +30,7 @@ const ManageVolunteer = () => {
 
     fetchUsers();
   }, []);
-
-  // Handle delete action
+ // Handle delete action
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this volunteer?")) return;
     
@@ -83,8 +80,7 @@ const ManageVolunteer = () => {
       setError(error.message);
     }
   };
-
-  return (
+ return (
     <div className="p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-3xl font-semibold text-gray-800 mb-6">Manage Volunteers</h2>
       

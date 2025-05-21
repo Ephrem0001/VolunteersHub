@@ -21,7 +21,7 @@ const VerifyEmail = () => {
 
       try {
         const response = await fetch(
-          `https://volunteershub-project.onrender.com/api/auth/verify-email?token=${token}&email=${email}`,
+          `http://localhost:3000/api/auth/verify-email?token=${token}&email=${email}`,
           {
             headers: {
               'Content-Type': 'application/json'
@@ -81,12 +81,7 @@ const VerifyEmail = () => {
               >
                 Go to Login
               </button>
-              {/* <button
-                onClick={() => navigate('/register')}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Register Again
-              </button> */}
+             
             </div>
           </>
         )}

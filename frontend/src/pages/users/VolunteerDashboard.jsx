@@ -62,7 +62,7 @@ useEffect(() => {
   const fetchUserDataAndStats = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
+      const response = await fetch("http://localhost:5000/api/auth/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -70,7 +70,7 @@ useEffect(() => {
 
       // Fetch stats if user exists
       if (data.user && data.user._id) {
-        const statsRes = await fetch(`https://volunteershub-6.onrender.com/api/users/${data.user._id}/stats`, {
+        const statsRes = await fetch(`http://localhost:5000/api/users/${data.user._id}/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (statsRes.ok) {
@@ -105,7 +105,7 @@ useEffect(() => {
     const fetchApprovedEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch("https://volunteershub-6.onrender.com/api/events/approved");
+        const response = await fetch("http://localhost:5000/api/events/approved");
         if (response.status === 429) {
           // Show a user-friendly error
           toast.error("You are making requests too quickly. Please wait and try again.");
@@ -154,7 +154,7 @@ useEffect(() => {
       return 'health';
     }
     
-    return 'other';
+    return 'join us';
   };
 
   const handleLogout = () => {
@@ -569,37 +569,7 @@ useEffect(() => {
                 </div>
               </div>
             </motion.div>
-          )}
-
-          {/* Category Quick Filters */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8 }}
-            className="mt-6 flex flex-wrap justify-center gap-3"
-          >
-            {[
-              { name: 'All Events', value: 'all', emoji: '🌟', color: 'bg-purple-100 text-purple-800 hover:bg-purple-200' },
-              { name: 'Environment', value: 'environment', emoji: '🌱', color: 'bg-green-100 text-green-800 hover:bg-green-200' },
-              { name: 'Education', value: 'education', emoji: '📚', color: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
-              { name: 'Health', value: 'health', emoji: '❤️', color: 'bg-red-100 text-red-800 hover:bg-red-200' }
-            ].map((filter) => (
-              <motion.button
-                key={filter.value}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveFilter(filter.value)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all flex items-center ${
-                  activeFilter === filter.value 
-                    ? `${filter.color.replace('hover:', '')} shadow-md ring-2 ring-offset-2 ${filter.value === 'all' ? 'ring-purple-300' : filter.value === 'environment' ? 'ring-green-300' : filter.value === 'education' ? 'ring-blue-300' : 'ring-red-300'}` 
-                    : `${filter.color} shadow-sm`
-                }`}
-              >
-                <span className="mr-2">{filter.emoji}</span>
-                {filter.name}
-              </motion.button>
-            ))}
-          </motion.div>
+          )}  
         </motion.div>
 
         {/* Event List */}
@@ -651,7 +621,7 @@ useEffect(() => {
     aria-label={`View details for ${event.name}`}
   />
   
-  <img
+ <img
     src={event.image || `http://localhost:5000/images/${event.imageFilename}`}
     alt={event.name}
     className="w-full h-full object-cover"

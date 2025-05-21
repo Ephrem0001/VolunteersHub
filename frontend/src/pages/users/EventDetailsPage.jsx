@@ -45,6 +45,7 @@ const EventDetailsPage = () => {
     skills: "",
     age: ""
   });
+  const [notificationPreference, setNotificationPreference] = useState(true);
   const [loading, setLoading] = useState(true);
   const [formErrors, setFormErrors] = useState({});
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -129,7 +130,7 @@ const EventDetailsPage = () => {
           setCurrentUser({ _id: "123", name: "Guest User" });
           return;
         }
-        const response = await fetch("https://volunteershub-6.onrender.com/api/auth/profile", {
+        const response = await fetch("http://localhost:5000/api/auth/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -151,7 +152,7 @@ const EventDetailsPage = () => {
         setSubscribed(false);
         return;
       }
-      const res = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/is-registered`, {
+      const res = await fetch(`http://localhost:5000/api/events/${eventId}/is-registered`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -164,7 +165,7 @@ const EventDetailsPage = () => {
   const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}`);
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}`);
       if (!response.ok) throw new Error("Failed to fetch event details");
       const data = await response.json();
       setEvent(data);
@@ -330,7 +331,7 @@ const EventDetailsPage = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/like/one`, {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/like/one`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -393,7 +394,7 @@ const EventDetailsPage = () => {
   
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/comments`, {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -465,7 +466,7 @@ const EventDetailsPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}/register`, {
+      const response = await fetch(`http://localhost:5000/api/events/${eventId}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -616,7 +617,6 @@ const EventDetailsPage = () => {
             </div>
           </div>
         )}
-
         <div className="p-6">
           <div className="flex flex-col md:flex-row justify-between items-start">
             <div className="mb-4 md:mb-0">
@@ -646,7 +646,16 @@ const EventDetailsPage = () => {
               </span>
             </div>
           </div>
-          
+           <div className="flex items-center mb-4">
+    <input
+      type="checkbox"
+      id="notifications"
+      checked={notificationPreference}
+      onChange={(e) => setNotificationPreference(e.target.checked)}
+      className="mr-2"
+    />
+    <label htmlFor="notifications">Receive email reminders about this event</label>
+  </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
             <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
               <FaCalendarAlt className="mr-2 text-blue-500 text-lg" />
@@ -1261,6 +1270,8 @@ const EventDetailsPage = () => {
                       disabled={loading}
                       className={`px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
+                     
+
                       {loading ? (
                         <span className="flex items-center">
                           <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

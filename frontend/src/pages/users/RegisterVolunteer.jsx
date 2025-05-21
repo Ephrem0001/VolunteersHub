@@ -106,7 +106,7 @@ const RegisterVolunteer = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://volunteershub-6.onrender.com/api/auth/register/volunteer", {
+      const response = await fetch("http://localhost:5000/api/auth/register/volunteer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -351,7 +351,8 @@ const RegisterVolunteer = () => {
                   I agree to the{" "}
                   <button
                     type="button"
-                    onClick={() => navigate("/terms")}
+                    // onClick={() => navigate("/terms")}
+                     onClick={() => window.open("/terms", "_blank")}
                     className="text-purple-400 hover:text-purple-300 underline"
                   >
                     Terms

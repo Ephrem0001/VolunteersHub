@@ -157,32 +157,12 @@ useEffect(() => {
     return 'join us';
   };
 
- const handleLogout = async () => {
-  try {
-    // Optional: Send logout request to backend if needed
-    const token = localStorage.getItem('token');
-    if (token) {
-      await fetch('https://volunteershub-6.onrender.com/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-    }
-  } catch (err) {
-    console.error('Logout error:', err);
-  } finally {
-    // Clear all client-side data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    
-    // Show feedback and redirect
-    toast.success("Logged out successfully");
-    setTimeout(() => {
-      window.location.replace("/login");
-    }, 1000);
-  }
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  toast.success("Logged out successfully");
+  setTimeout(() => {
+    navigate("/login", { replace: true });
+  }, 1000);
 };
 
   const handleEventClick = (eventId) => {

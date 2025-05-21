@@ -47,7 +47,7 @@ router.post("/register/volunteer", async (req, res) => {
 if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  console.log("Registering volunteer:", name, email);
+  console.log("Registering voluntees:", name, email);
   try {
     const existingNGO = await NGO.findOne({ email });
     const existingVolunteer = await Volunteer.findOne({ email });

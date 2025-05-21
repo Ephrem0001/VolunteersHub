@@ -14,7 +14,7 @@ const VerifyEmail = () => {
       const email = searchParams.get('email');
 
      
-if (!token || !email) {
+if (!token ||!email) {
         setStatus('error');
         setMessage('Invalid verification link - missing parameters');
         return;

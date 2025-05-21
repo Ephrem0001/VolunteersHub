@@ -71,14 +71,17 @@ if (!name || !email || !password) {
     await newVolunteer.save();
 
     const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
-
-    transporter.sendMail({
-      from: process.env.EMAIL_USER,
+   transporter.sendMail({
+      from: `"Your App" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verify Your Email",
-      html: <p>Click <a href="${verificationLink}">here</a> to verify your email.</p>,
-    }).catch(err => console.error("Email error:", err));
-
+      html: `
+        <p>Hell ${name},</p>
+        <p>Please click the link below to verify your email:</p>
+        <a href="${verificationLink}">Verify Email</a>
+        <p>This link expires in 24 hours.</p>
+      `,
+    });
     res.status(201).json({ message: "Registration successful! Check your email." });
   } catch (error) {
     console.error("Registration error:", error);

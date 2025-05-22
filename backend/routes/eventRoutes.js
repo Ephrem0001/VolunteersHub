@@ -572,7 +572,7 @@ const eventsWithVolunteerCount = await Promise.all(events.map(async (event) => {
   return {
     ...event._doc,
     volunteers: volunteerCount,
-    image: event.image ? `https://volunteershub-6.onrender.com${event.image}` : null,
+    image: event.image ? `http://localhost:5000${event.image}` : null,
   };
 }));
 res.json(eventsWithVolunteerCount);
@@ -590,7 +590,7 @@ router.get("/:eventId", async (req, res) => {
     const volunteerCount = await Applier.countDocuments({ eventId: event._id });
     const eventWithFullImageUrl = {
       ...event._doc,
-      image: event.image ? `https://volunteershub-6.onrender.com${event.image}` : null,
+      image: event.image ? `http://localhost:5000${event.image}` : null,
       volunteers: volunteerCount, // <-- This is a number!
     };
     res.status(200).json(eventWithFullImageUrl);
@@ -892,41 +892,6 @@ async function sendConfirmationEmail(user, event) {
 
   await transporter.sendMail(mailOptions);
 }
-// router.post("/:eventId/register", verifyToken, async (req, res) => {
-//   try {
-//     const { eventId } = req.params;
-//     const userId = req.user.id; // should be a string
-//     const { sex, skills, age } = req.body;
-
-//     // Always compare as string
-//     const alreadyRegistered = await Applier.findOne({ userId: String(userId), eventId: String(eventId) });
-//     if (alreadyRegistered) {
-//       return res.status(400).json({ message: "Already registered for this event" });
-//     }
-
-//     const event = await Event.findById(eventId);
-//     if (!event) return res.status(404).json({ message: "Event not found" });
-
-//     const user = await Volunteer.findById(userId);
-//     if (!user) return res.status(404).json({ message: "User not found" });
-
-//     const applier = new Applier({
-//       userId: String(user._id),
-//       name: user.name,
-//       sex,
-//       skills,
-//       age,
-//       eventId: String(event._id),
-//       eventCreatorId: event.createdBy,
-//     });
-
-//     await applier.save();
-//     res.status(201).json({ message: "Registered successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Registration failed" });
-//   }
-// });
 
 router.post("/:eventId/like/one", async (req, res) => {
   try {

@@ -87,7 +87,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+        const res = await fetch("http://localhost:5000/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
 const handleProfileUpdate = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+    const res = await fetch("http://localhost:5000/api/admin/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -180,7 +180,7 @@ const handlePasswordChange = async (e) => {
 
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/change-password", {
+    const res = await fetch("http://localhost:5000/api/admin/change-password", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

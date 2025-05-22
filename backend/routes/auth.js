@@ -70,7 +70,7 @@ if (!name || !email || !password) {
 
     await newVolunteer.save();
 
-const verificationLink = `https://volunteershub-project.onrender.com/#/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;   transporter.sendMail({
+const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;   transporter.sendMail({
       from: `"Your App" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verify Your Email",
@@ -201,7 +201,7 @@ router.post("/register/ngo", async (req, res) => {
     await newNGO.save();
 
     // Create verification link
-const verificationLink = `https://volunteershub-project.onrender.com/#/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+const verificationLink = `https://volunteershub-project.onrender.com/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
     // Send email
     await transporter.sendMail({
       from: `"Your App" <${process.env.EMAIL_USER}>`,

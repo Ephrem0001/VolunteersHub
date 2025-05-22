@@ -39,7 +39,7 @@ const ManageEvents = () => {
             return;
           }
   
-          const response = await fetch("https://volunteershub-6.onrender.com/api/events/my-events", {
+          const response = await fetch("http://localhost:5000/api/events/my-events", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -133,7 +133,7 @@ const ManageEvents = () => {
           throw new Error("Authentication token missing. Please login again.");
         }
     
-        const response = await fetch(`https://volunteershub-6.onrender.com/api/events/${eventId}`, {
+        const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
           method: "DELETE",
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -471,7 +471,7 @@ const ManageEvents = () => {
       src={
         event.image.startsWith('http') 
           ? event.image 
-          : `https://volunteershub-6.onrender.com${event.image}`
+          : `http://localhost:5000${event.image}`
       }
       alt={event.name}
       className="w-full h-full object-cover"
@@ -508,19 +508,7 @@ const ManageEvents = () => {
                         </p>
 
                         <div className="space-y-2 text-sm text-gray-400">
-                          <div className="flex items-center">
-                            <FaCalendarAlt className="mr-2 text-blue-400 flex-shrink-0" />
-                            <span>
-                              {new Date(event.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
+                          
                           <div className="flex items-center">
                             <FaMapMarkerAlt className="mr-2 text-yellow-400 flex-shrink-0" />
                             <span className="truncate">{event.location}</span>

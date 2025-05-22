@@ -10,4 +10,3 @@ const Button = ({ children, className, ...props }) => {
   };
   
   export default Button;
-  

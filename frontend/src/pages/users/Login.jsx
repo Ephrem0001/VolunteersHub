@@ -410,7 +410,7 @@ const Login = () => {
                 whileTap={{ scale: 0.98 }}
                 disabled={isLoading}
               >
-                {isLoading ? "Processing..." : "Admin Login "}
+                {isLoading ? "Processing..." : "Admin Login (Debug)"}
               </motion.button>
             )}
           </motion.div>

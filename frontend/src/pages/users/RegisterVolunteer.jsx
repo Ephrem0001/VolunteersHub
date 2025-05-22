@@ -351,8 +351,7 @@ const RegisterVolunteer = () => {
                   I agree to the{" "}
                   <button
                     type="button"
-                    // onClick={() => navigate("/terms")}
-                     onClick={() => window.open("/terms", "_blank")}
+                    onClick={() => navigate("/terms")}
                     className="text-purple-400 hover:text-purple-300 underline"
                   >
                     Terms

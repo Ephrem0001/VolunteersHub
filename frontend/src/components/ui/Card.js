@@ -7,4 +7,3 @@ const Card = ({ children, className }) => {
   };
   
   export default Card;
-  

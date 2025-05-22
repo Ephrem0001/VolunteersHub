@@ -722,7 +722,16 @@ const TrackVolunteers = () => {
                         <p className="text-gray-800">{selectedVolunteer.volunteerSkills}</p>
                       </div>
                       <div>
-                
+                        <p className="text-sm text-gray-500">Contact</p>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => sendEmail(selectedVolunteer.volunteerEmail)}
+                            className="text-blue-600 hover:text-blue-800 flex items-center"
+                          >
+                            <FaEnvelope className="mr-1" />
+                            {selectedVolunteer.volunteerEmail || "No email"}
+                          </button>
+                        </div>
                         {selectedVolunteer.volunteerPhone && (
                           <div className="flex items-center gap-2 mt-1">
                             <FaPhone className="text-gray-400" />
@@ -795,13 +804,13 @@ const TrackVolunteers = () => {
                   >
                     Close
                   </button>
-                  {/* <button
+                  <button
                     onClick={() => sendEmail(selectedVolunteer.volunteerEmail)}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
                     disabled={!selectedVolunteer.volunteerEmail}
                   >
                     <FaEnvelope /> Contact Volunteer
-                  </button> */}
+                  </button>
                 </div>
               </div>
             </motion.div>

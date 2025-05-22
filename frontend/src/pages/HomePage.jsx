@@ -622,7 +622,7 @@ const testimonials = [
         <span className="ml-1 inline-block w-1 h-6 bg-orange-400 animate-pulse"></span>
       </p>
       <p className="text-base sm:text-lg text-orange-200 font-medium">
-        Empowering communities since 2025
+        Empowering communities since 2015
       </p>
     </motion.div>
 
@@ -668,6 +668,42 @@ const testimonials = [
           </span>
         </Link>
       </motion.div>
+    </motion.div>
+
+    {/* Stats Section */}
+    <motion.div
+      className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.6 }}
+    >
+      {[
+        { number: "10K+", label: "Volunteers", icon: faUser, color: COLORS.primary.light },
+        { number: "500+", label: "NGOs", icon: faUsers, color: COLORS.secondary.light },
+        { number: "1M+", label: "Hours Donated", icon: faHeart, color: "from-red-400 to-red-500" },
+        { number: "50+", label: "Cities", icon: faMapMarkerAlt, color: "from-purple-400 to-purple-500" }
+      ].map((stat, index) => (
+        <motion.div
+          key={index}
+          className="relative bg-white/10 backdrop-blur-sm p-3 sm:p-4 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-300 overflow-hidden group"
+          whileHover={{ y: -5 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 + index * 0.1 }}
+        >
+          <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <FontAwesomeIcon icon={stat.icon} className="text-orange-400 text-lg sm:text-xl group-hover:text-white transition-colors duration-300" />
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-orange-400 group-hover:text-white transition-colors duration-300">
+                <CountUp end={parseInt(stat.number)} duration={2} delay={0.5 + index * 0.2} />
+                {stat.number.includes('+') && '+'}
+              </div>
+            </div>
+            <div className="text-xs sm:text-sm md:text-base text-gray-300 group-hover:text-white transition-colors duration-300">{stat.label}</div>
+          </div>
+        </motion.div>
+      ))}
     </motion.div>
   </motion.div>
 </section>

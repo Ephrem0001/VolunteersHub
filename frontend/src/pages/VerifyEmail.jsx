@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { FaCheckCircle, FaTimesCircle, FaSpinner } from 'react-icons/fa';
 
 const VerifyEmail = () => {
@@ -8,45 +9,51 @@ const VerifyEmail = () => {
   const [status, setStatus] = useState('verifying');
   const [message, setMessage] = useState('Verifying your email...');
 
+  // ✅ Prevent double API call in React 18 dev mode
+  const calledOnce = useRef(false);
+
   useEffect(() => {
+    if (calledOnce.current) return;
+    calledOnce.current = true;
+
     const verifyEmail = async () => {
       const token = searchParams.get('token');
       const email = searchParams.get('email');
 
-     
-if (!token ||!email) {
+      if (!token || !email) {
         setStatus('error');
         setMessage('Invalid verification link - missing parameters');
         return;
       }
+
       try {
-        const response = await fetch(
-          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
+        const res = await axios.get(
+          `https://volunteershub-6.onrender.com/api/auth/verify-email`,
           {
-            method: 'GET',
+            params: {
+              token,
+              email,
+            },
             headers: {
               'Content-Type': 'application/json',
             },
           }
         );
 
-        const data = await response.json();
-if (!response.ok) {
-          setStatus('error');
-          setMessage(data.message || 'Verification Successful');
-          return;
-        }
-
+        // On success
         setStatus('success');
-        setMessage(data.message);
-        if (data.token) {
-          localStorage.setItem('authToken', data.token);
+        setMessage(res.data.message);
+        if (res.data.token) {
+          localStorage.setItem('authToken', res.data.token);
         }
 
         setTimeout(() => navigate('/login'), 3000);
       } catch (error) {
+        console.error(error);
         setStatus('error');
-        setMessage(error.message);
+        setMessage(
+          error.response?.data?.message || 'Server error during verification'
+        );
       }
     };
 

@@ -45,7 +45,6 @@ const EventDetailsPage = () => {
     skills: "",
     age: ""
   });
-  const [notificationPreference, setNotificationPreference] = useState(true);
   const [loading, setLoading] = useState(true);
   const [formErrors, setFormErrors] = useState({});
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -617,6 +616,7 @@ const EventDetailsPage = () => {
             </div>
           </div>
         )}
+
         <div className="p-6">
           <div className="flex flex-col md:flex-row justify-between items-start">
             <div className="mb-4 md:mb-0">
@@ -646,16 +646,7 @@ const EventDetailsPage = () => {
               </span>
             </div>
           </div>
-           <div className="flex items-center mb-4">
-    <input
-      type="checkbox"
-      id="notifications"
-      checked={notificationPreference}
-      onChange={(e) => setNotificationPreference(e.target.checked)}
-      className="mr-2"
-    />
-    <label htmlFor="notifications">Receive email reminders about this event</label>
-  </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
             <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100">
               <FaCalendarAlt className="mr-2 text-blue-500 text-lg" />
@@ -1270,8 +1261,6 @@ const EventDetailsPage = () => {
                       disabled={loading}
                       className={`px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                     
-
                       {loading ? (
                         <span className="flex items-center">
                           <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

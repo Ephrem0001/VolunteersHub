@@ -320,73 +320,6 @@ router.post("/login", async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-});// In your auth routes (backend)
-router.get("/verify-email", async (req, res) => {
-  const { token, email } = req.query;
-  console.log("Token:", token);
-  console.log("Email:", email);
-  if (!token || !email) {
-    return res.status(400).json({ message: "Token and email are required" });
-  }
-  
-
-  try {
-    // 1. Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // 2. Find user with additional checks
-    let user = await Volunteer.findOne({ 
-      email: decoded.email,
-      verificationToken: token // Ensure token matches
-    }) || await NGO.findOne({ 
-      email: decoded.email,
-      verificationToken: token
-    });
-
-    if (!user) {
-      return res.status(404).json({ 
-        message: "User not found or token mismatch" 
-      });
-    }
-
-    // 3. Atomic update to ensure verification
-    const updateResult = await Volunteer.updateOne(
-      { _id: user._id },
-      { 
-        $set: { verified: true },
-        $unset: { verificationToken: 1 } 
-      }
-    );
-
-    // Alternative for NGO if needed:
-    // const updateResult = await NGO.updateOne(...)
-
-    if (updateResult.modifiedCount === 0) {
-      throw new Error("Failed to update verification status");
-    }
-
-    // 4. Generate new auth token
-    const authToken = jwt.sign(
-      { userId: user._id, role: user.role }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: "1d" }
-    );
-
-    res.json({ 
-      message: "Email verified successfully",
-      token: authToken,
-      verified: true // Explicitly send verification status
-    });
-
-  } catch (error) {
-    console.error("Verification error:", error);
-    res.status(400).json({ 
-      message: error.message.includes("expired") 
-        ? "Verification link expired" 
-        : "Invalid verification link",
-      verified: false
-    });
-  }
 });
 
   const storage = multer.diskStorage({
@@ -463,30 +396,38 @@ router.get("/pending", verifyToken, async (req, res) => {
 
 router.get("/verify-email", async (req, res) => {
   const { token, email } = req.query;
-
+  console.log("token: ", token, "\nemail: ", email);
+  
   if (!token || !email) {
-      return res.status(400).json({ message: 'Token and email are required.' });
+    return res.status(400).json({ message: 'Token and email are required.' });
   }
 
   try {
-      const decodedEmail = decodeURIComponent(email);
-      const user = await Volunteer.findOne({ email: decodedEmail, verificationToken: token }) ||
-                   await NGO.findOne({ email: decodedEmail, verificationToken: token });
+    const decodedEmail = decodeURIComponent(email);
+    const user = await Volunteer.findOne({ email: decodedEmail, verificationToken: token }) ||
+                 await NGO.findOne({ email: decodedEmail, verificationToken: token });
 
-      if (!user) {
-          return res.status(404).json({ message: 'Invalid or expired token.' });
-      }
+    if (!user) {
+      return res.status(404).json({ message: 'Invalid or expired token.' });
+    }
 
-      user.verified = true;
-      user.verificationToken = undefined; // Clear the token
-      await user.save();
+    user.verified = true;
+    user.verificationToken = undefined; // Clear the token
+    await user.save();
 
-      res.redirect(`${process.env.FRONTEND_URL}/login`);
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
+    console.log("updatedUser: ", updatedUser);
+
+    // ✅ Respond with JSON instead of redirect
+    return res.status(200).json({ message: 'Email verified successfully', user: updatedUser });
   } catch (error) {
-      console.error('Email verification error:', error);
-      res.status(500).json({ message: 'Server error during verification.' });
+    console.error('Email verification error:', error);
+    return res.status(500).json({ message: 'Server error during verification.' });
   }
 });
+
 
 
 

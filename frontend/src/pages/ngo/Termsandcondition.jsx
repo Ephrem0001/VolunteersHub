@@ -78,4 +78,3 @@ const Termsandcondition = () => {
 };
 
 export default Termsandcondition;
-

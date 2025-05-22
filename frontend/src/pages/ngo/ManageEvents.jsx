@@ -466,37 +466,24 @@ const ManageEvents = () => {
                     <div className="h-full flex flex-col">
                       {/* Event Image */}
                       <div className="relative h-48 overflow-hidden group">
-  {event.image ? (
-    <motion.img
-      src={
-        event.image.startsWith('http') 
-          ? event.image 
-          : `http://localhost:5000${event.image}`
-      }
-      alt={event.name}
-      className="w-full h-full object-cover"
-      initial={{ scale: 1 }}
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.5 }}
-      onError={(e) => {
-        e.target.onerror = null; 
-        e.target.src = '/default-event.jpg'; // Add a default image in your public folder
-      }}
-    />
-  ) : (
-    <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-      <FaCalendarAlt className="text-4xl text-gray-500" />
-    </div>
-  )}
-  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-    <span className="text-white font-medium">
-      {getTimeRemaining(event.date)}
-    </span>
-  </div>
-  <div className="absolute top-3 left-3">
-    {getStatusBadge(event.status)}
-  </div>
-</div>
+                        <motion.img
+                          src={event.image?.startsWith('http') ? event.image : `http://localhost:5000${event.image}`}
+                          alt={event.name}
+                          className="w-full h-full object-cover"
+                          initial={{ scale: 1 }}
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.5 }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                          <span className="text-white font-medium">
+                            {getTimeRemaining(event.date)}
+                          </span>
+                        </div>
+                        <div className="absolute top-3 left-3">
+                          {getStatusBadge(event.status)}
+                        </div>
+                      </div>
+
                       {/* Event Content */}
                       <div className="p-5 flex-grow flex flex-col">
                         <h3 className="text-xl font-bold text-teal-400 mb-2 line-clamp-1">

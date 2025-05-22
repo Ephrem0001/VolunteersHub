@@ -317,7 +317,7 @@ const RegisterNGO = () => {
             <FaHandsHelping className="text-white text-3xl" />
           </motion.div>
           <h2 className="text-3xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-            NPOs Registration.
+            NPOs Registration
           </h2>
           <p className="text-gray-400 mt-2 text-center">
             Join our community of change-makers
@@ -482,15 +482,15 @@ const RegisterNGO = () => {
                 I agree to the{" "}
                 <button
                   type="button"
-                  onClick={() => window.open("/ngo/termsandcondition", "_blank")}
+                  onClick={() => navigate("/ngo/termsandcondition")}
                   className="text-purple-400 hover:text-purple-300 underline"
                 >
                   Terms and Conditions
                 </button>{" "}
                 and{" "}
                 <button
-                  type="button"                
-                    onClick={() => window.open("/ngo/privacypolicy", "_blank")}
+                  type="button"
+                  onClick={() => navigate("/ngo/privacypolicy")}
                   className="text-purple-400 hover:text-purple-300 underline"
                 >
                   Privacy Policy

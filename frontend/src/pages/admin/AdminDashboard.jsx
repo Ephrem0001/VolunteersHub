@@ -90,7 +90,7 @@ const [events, setEvents] = useState([]);
         const token = localStorage.getItem("token");
         console.log("Fetching admin profile with token:", token ? "Token exists" : "No token");
         
-        const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+        const res = await fetch("http://localhost:5000/api/admin/profile", {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -136,7 +136,7 @@ useEffect(() => {
   const fetchAllEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://volunteershub-6.onrender.com/api/events", {
+      const response = await fetch("http://localhost:5000/api/events", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -153,7 +153,7 @@ useEffect(() => {
   const fetchPendingEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://volunteershub-6.onrender.com/api/events/pending", {
+      const response = await fetch("http://localhost:5000/api/events/pending", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -173,14 +173,14 @@ useEffect(() => {
       const token = localStorage.getItem("token");
       
       // Fetch users
-      const usersResponse = await fetch("https://volunteershub-6.onrender.com/api/users", {
+      const usersResponse = await fetch("http://localhost:5000/api/users", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const usersData = await usersResponse.json();
       setUsers(usersData);
       
       // Fetch events
-      const eventsResponse = await fetch("https://volunteershub-6.onrender.com/api/events", {
+      const eventsResponse = await fetch("http://localhost:5000/api/events", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const eventsData = await eventsResponse.json();
@@ -205,7 +205,7 @@ useEffect(() => {
 const handleProfileUpdate = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/profile", {
+    const res = await fetch("http://localhost:5000/api/admin/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -247,7 +247,7 @@ const handlePasswordChange = async (e) => {
 
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch("https://volunteershub-6.onrender.com/api/admin/change-password", {
+    const res = await fetch("http://localhost:5000/api/admin/change-password", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -883,18 +883,7 @@ const AnalyticsDashboard = () => {
          {/* Stats Cards */}
 {activeTab !== "analytics" && activeTab !== "settings" && (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-    <motion.div
-      whileHover={{ y: -5 }}
-      className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
-    >
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-sm opacity-80">Total Volunteers</p>
-          <p className="text-3xl font-bold">{users.filter(user => user.role === 'volunteer').length}</p>
-        </div>
-        <FaUsers className="text-4xl opacity-30" />
-      </div>
-    </motion.div>
+    
 
   </div>
 )}

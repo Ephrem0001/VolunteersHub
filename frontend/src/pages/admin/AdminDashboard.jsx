@@ -885,18 +885,6 @@ const AnalyticsDashboard = () => {
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
     <motion.div
       whileHover={{ y: -5 }}
-      className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl p-6 text-white shadow-lg"
-    >
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-sm opacity-80">Total NPOs</p>
-          <p className="text-3xl font-bold">{users.filter(user => user.role === 'ngo').length}</p>
-        </div>
-        <FaUserShield className="text-4xl opacity-30" />
-      </div>
-    </motion.div>
-    <motion.div
-      whileHover={{ y: -5 }}
       className="bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl p-6 text-white shadow-lg"
     >
       <div className="flex justify-between items-center">

@@ -21,7 +21,7 @@ if (!token ||!email) {
       }
       try {
         const response = await fetch(
-          `http://localhost:5000/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
+          `https://volunteershub-6.onrender.com/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`,
           {
             method: 'GET',
             headers: {

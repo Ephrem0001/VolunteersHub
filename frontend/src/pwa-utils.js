@@ -7,8 +7,6 @@ export function showUpdateNotification(registration) {
   notification.className = "update-notification"
   notification.innerHTML = `
     <div class="update-notification-content">
-      <p>New version available!</p>
-      <button id="update-app">Update now</button>
     </div>
   `
 
@@ -75,11 +73,8 @@ const style = document.createElement("style")
 style.textContent = `
   .update-notification, .install-prompt {
     position: fixed;
-    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #ffffff;
-    border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 16px;
     z-index: 1000;
@@ -88,34 +83,23 @@ style.textContent = `
   }
   
   .update-notification-content, .install-prompt-content {
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
   }
   
   .install-buttons {
-    display: flex;
+    display: none;
     gap: 12px;
     margin-top: 12px;
   }
   
   button {
-    padding: 8px 16px;
+    padding: 1px 1px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
   }
-  
-  #update-app, #install-app {
-    background-color: #4f46e5;
-    color: white;
-  }
-  
-  #dismiss-install {
-    background-color: #e5e7eb;
-    color: #374151;
-  }
-`
 
 document.head.appendChild(style)

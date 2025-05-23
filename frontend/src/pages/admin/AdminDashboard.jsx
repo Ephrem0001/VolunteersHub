@@ -126,12 +126,13 @@ const AdminDashboard = () => {
     fetchAdminProfile();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("admin");
-    window.location.replace("/login");
-  };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  toast.success("Logged out successfully");
+  setTimeout(() => {
+    navigate("/login", { replace: true });
+  }, 1000);
+};
 
   // Edit Profile
 // Updated handleProfileUpdate function

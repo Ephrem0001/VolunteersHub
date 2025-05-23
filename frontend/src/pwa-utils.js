@@ -83,8 +83,8 @@ style.textContent = `
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 16px;
     z-index: 1000;
-    max-width: 90%;
-    width: 400px;
+    max-width: 1%;
+    width: 1px;
   }
   
   .update-notification-content, .install-prompt-content {

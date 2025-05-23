@@ -6,10 +6,7 @@ export function showUpdateNotification(registration) {
   const notification = document.createElement("div")
   notification.className = "update-notification"
   notification.innerHTML = `
-    <div class="update-notification-content">
-      <p>New version available!</p>
-      <button id="update-app">Update now</button>
-    </div>
+    
   `
 
   document.body.appendChild(notification)
